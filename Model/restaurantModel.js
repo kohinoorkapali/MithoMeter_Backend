@@ -30,11 +30,11 @@ export const Restaurant = sequelize.define("Restaurant",{
         allowNull:false,
         defaultValue: []
     },
-    openingStart:{
+    openTime:{
         type:DataTypes.TIME,
         allowNull:false
     },
-    openingEnd:{
+    closeTime:{
         type:DataTypes.TIME,
         allowNull:false
     },
