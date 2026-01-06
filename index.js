@@ -2,6 +2,10 @@ import express from "express";
 import { connection } from "./Database/db.js";
 import { userRouter } from "./Routes/userRoutes.js";
 
+
+import "./Model/restaurantModel.js";
+import "./Model/userModel.js";
+
 const app = express();
 
 connection();
