@@ -43,13 +43,14 @@ export const Restaurant = sequelize.define("Restaurant",{
         allowNull:false
     },
     websiteLink:{
-        type: DataTypes.STRING,
-        allowNull:false
-    },
-    menuLink:{
-        type: DataTypes.STRING,
-        allowNull:false
-    },
+    type: DataTypes.TEXT,
+    allowNull:true
+},
+menuLink:{
+    type: DataTypes.TEXT,
+    allowNull:true
+},
+
     moods:{
         type:DataTypes.JSON,
         allowNull:false,

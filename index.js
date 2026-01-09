@@ -13,32 +13,32 @@ import "./Model/userModel.js";
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // frontend URL
+  origin: "http://localhost:5173",
   methods: ["GET", "POST", "PATCH", "DELETE"],
   credentials: true,
 }));
 
+// parse JSON bodies
 app.use(express.json());
 
+// Serve uploaded images
+app.use("/uploads", express.static("uploads"));
+
+
+// DB connection
 connection()
   .then(async () => {
     console.log("Database connected");
-
-    // Ensure admin exists
     await createAdminIfNotExists();
   })
   .catch((err) => console.error("DB connection failed:", err));
-
 
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/restaurants", restaurantRouter);
 
-app.get("/", (req, res) => {
-  res.send("User API is running");
-});
+// Landing page
+app.get("/", (req, res) => res.send("User API is running"));
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
-});
+app.listen(5000, () => console.log("Server running on port 5000"));
