@@ -38,8 +38,8 @@ export const Restaurant = sequelize.define("Restaurant",{
         allowNull:false
     },
     websiteLink:{
-    type: DataTypes.TEXT,
-    allowNull:true
+        type: DataTypes.TEXT,
+        allowNull:true
     },
     menuLink:{
         type: DataTypes.TEXT,

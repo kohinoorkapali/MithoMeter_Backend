@@ -1,4 +1,4 @@
-import { getAllRestaurants, saveRestaurant } from "../Controller/restaurantController.js";
+import { deleteById, getAllRestaurants, saveRestaurant } from "../Controller/restaurantController.js";
 import express from "express";
 import multer from "multer";
 
@@ -25,5 +25,8 @@ restaurantRouter.post(
 
 
 restaurantRouter.get("/", getAllRestaurants);
+
+
+restaurantRouter.delete("/:id", deleteById);
 
 export default restaurantRouter;

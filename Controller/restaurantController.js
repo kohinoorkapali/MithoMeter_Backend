@@ -1,8 +1,19 @@
 import { Restaurant } from "../Model/restaurantModel.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
 
+const parseJSONField = (field) => {
+  if (!field) return [];
+  if (Array.isArray(field)) return field;
+
+  try {
+    return JSON.parse(field);
+  } catch (error) {
+    console.error("JSON parse error:", field);
+    return [];
+  }
+};
+
 export const saveRestaurant = async (req, res) => {
-  console.log("➡️ saveRestaurant controller hit");
   try {
     const {
       name,
@@ -19,53 +30,37 @@ export const saveRestaurant = async (req, res) => {
     } = req.body;
 
     if (!name || !location || !openTime || !closeTime || !description) {
-      return res.status(400).send({
-        message: "Required fields are missing",
-      });
+      return res.status(400).json({ message: "Required fields are missing" });
     }
+    console.log("REQ BODY:", req.body);
+console.log("REQ FILES:", req.files);
 
-    console.log("BODY:", req.body);
-
-    console.log("CREATE PAYLOAD:", {
-      name,
-      location,
-      cuisines,
-      priceRange,
-      openTime,
-      closeTime,
-      description,
-      websiteLink,
-      menuLink,
-      moods,
-      features,
-    });
 
     const restaurant = await Restaurant.create({
       name,
       location,
-      cuisines: cuisines || [],
-      priceRange: priceRange || [],
+      cuisines: parseJSONField(cuisines),
+      priceRange: parseJSONField(priceRange),
       openTime,
       closeTime,
       description,
       websiteLink,
       menuLink,
-      moods: moods || [],
-      features: features || [],
-      photos: req.files ? req.files.map((file) => file.path) : [],
-      //adminId: req.user.id, // admin who created it
+      moods: parseJSONField(moods),
+      features: parseJSONField(features),
+      photos: req.files?.map((file) => file.path) || [],
     });
 
-    res.status(201).send({
+    res.status(201).json({
       data: restaurant,
       message: "Restaurant saved successfully",
     });
   } catch (e) {
-    res.status(500).send({
-      message: e.message,
-    });
+    console.error("🔥 SAVE RESTAURANT ERROR:", e);
+    res.status(500).json({ message: e.message });
   }
 };
+
 export const getAllRestaurants = async (req, res) => {
   try {
     const restaurants = await Restaurant.findAll();
@@ -85,6 +80,28 @@ export const getAllRestaurants = async (req, res) => {
     res.status(200).send({
       data: updatedRestaurants,
       message: "Restaurants retrieved successfully",
+    });
+  } catch (e) {
+    res.status(500).send({ message: e.message });
+  }
+};
+
+export const deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const restaurant = await Restaurant.findOne({ where: { restaurantId: id } });
+
+    if (!restaurant) {
+      return res.status(404).send({
+        message: "Restaurant not found",
+      });
+    }
+
+    await restaurant.destroy();
+
+    res.status(200).send({
+      message: "Restaurant deleted successfully",
     });
   } catch (e) {
     res.status(500).send({ message: e.message });
