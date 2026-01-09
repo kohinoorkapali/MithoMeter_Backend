@@ -7,11 +7,6 @@ export const Restaurant = sequelize.define("Restaurant",{
         autoIncrement: true,
         primaryKey: true,
     },
-    // userId:{
-    //     type: DataTypes.INTEGER,
-    //     autoIncrement: true,
-    //     primaryKey: true,
-    // },
     name:{
         type: DataTypes.STRING,
         allowNull:false
@@ -45,11 +40,11 @@ export const Restaurant = sequelize.define("Restaurant",{
     websiteLink:{
     type: DataTypes.TEXT,
     allowNull:true
-},
-menuLink:{
-    type: DataTypes.TEXT,
-    allowNull:true
-},
+    },
+    menuLink:{
+        type: DataTypes.TEXT,
+        allowNull:true
+    },
 
     moods:{
         type:DataTypes.JSON,
@@ -62,9 +57,9 @@ menuLink:{
         defaultValue: []
     },
     photos:{
-        type:DataTypes.JSON,
+        type:DataTypes.JSON,    
         allowNull:false,
         defaultValue: []
-    }
+}
 });
 

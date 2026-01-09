@@ -1,4 +1,4 @@
-import { saveRestaurant } from "../Controller/restaurantController.js";
+import { getAllRestaurants, saveRestaurant } from "../Controller/restaurantController.js";
 import express from "express";
 import multer from "multer";
 
@@ -22,5 +22,8 @@ restaurantRouter.post(
   upload.array("photos", 5), // field name MUST be "photos"
   saveRestaurant
 );
+
+
+restaurantRouter.get("/", getAllRestaurants);
 
 export default restaurantRouter;
