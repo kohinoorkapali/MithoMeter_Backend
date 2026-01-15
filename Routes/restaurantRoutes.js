@@ -1,20 +1,8 @@
-import { deleteById, getAllRestaurants, saveRestaurant } from "../Controller/restaurantController.js";
+import { deleteById, getAllRestaurants, getRestaurantById, saveRestaurant, updateRestaurantById } from "../Controller/restaurantController.js";
 import express from "express";
-import multer from "multer";
+import upload from "../middleware/uploads.js";
 
 const restaurantRouter = express.Router();
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // folder to save uploaded images
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage });
 
 // Route: handle text fields + images
 restaurantRouter.post(
@@ -23,9 +11,14 @@ restaurantRouter.post(
   saveRestaurant
 );
 
+restaurantRouter.patch(
+  "/:id",
+  upload.array("photos", 5),
+  updateRestaurantById
+);
 
 restaurantRouter.get("/", getAllRestaurants);
-
+restaurantRouter.get("/:id", getRestaurantById);
 
 restaurantRouter.delete("/:id", deleteById);
 

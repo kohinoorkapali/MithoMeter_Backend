@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import { connection } from "./Database/db.js";
 import { userRouter } from "./Routes/userRoutes.js";
 import authRouter from "./Routes/authRoutes.js"; 
@@ -13,8 +16,8 @@ import "./Model/userModel.js";
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5175",
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
 }));
 
@@ -22,7 +25,9 @@ app.use(cors({
 app.use(express.json());
 
 // Serve uploaded images
-app.use("/uploads", express.static("uploads"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 // DB connection
