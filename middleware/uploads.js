@@ -2,27 +2,28 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Absolute path to 'uploads/restaurants' inside your project
-const uploadPath = path.join(process.cwd(), "uploads", "restaurants");
+const BASE_UPLOAD_DIR = path.resolve("./uploads");
 
-// Ensure the folder exists
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
+function createMulterUploader(folderName) {
+  const uploadPath = path.join(BASE_UPLOAD_DIR, folderName);
+
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, uniqueName + path.extname(file.originalname));
+    },
+  });
+
+  return multer({ storage });
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadPath); 
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueName + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
-});
-
-export default upload;
+export const reviewPhotoUploader = createMulterUploader("reviewPhotos");
+export const restaurantUploader = createMulterUploader("restaurants");
+export const profileUploader = createMulterUploader("profile");

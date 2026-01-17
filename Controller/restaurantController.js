@@ -70,6 +70,11 @@ export const getAllRestaurants = async (req, res) => {
 
       return {
         ...restaurant,
+        // normalize these fields into arrays
+        cuisines: parseJSONField(restaurant.cuisines),
+        priceRange: parseJSONField(restaurant.priceRange),
+        moods: parseJSONField(restaurant.moods),
+        features: parseJSONField(restaurant.features),
         isOpen: isRestaurantOpen(
           restaurant.openTime,
           restaurant.closeTime
