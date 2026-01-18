@@ -1,16 +1,25 @@
 import { Restaurant } from "../Model/restaurantModel.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
+import { Op } from "sequelize"; 
 
 const parseJSONField = (field) => {
   if (!field) return [];
   if (Array.isArray(field)) return field;
 
-  try {
-    return JSON.parse(field);
-  } catch (error) {
-    console.error("JSON parse error:", field);
-    return [];
+  const str = field.trim();
+
+  // If it's a JSON array, parse it
+  if (str.startsWith("[")) {
+    try {
+      return JSON.parse(str);
+    } catch (error) {
+      console.error("JSON parse error:", field);
+      return [];
+    }
   }
+
+  // Otherwise, treat it as comma-separated string
+  return str.split(",").map(s => s.trim());
 };
 
 export const saveRestaurant = async (req, res) => {
@@ -108,37 +117,41 @@ export const deleteById = async (req, res) => {
   }
 };
 
+
 export const filterRestaurants = async (req, res) => {
-  const {
-    cuisine,
-    ratings,
-    price,
-    mood,
-    amenities,
-    open
-  } = req.body;
+  const { cuisine = [], ratings = [], price = [], mood = [], amenities = [], open = [] } = req.body;
 
   try {
+    // Step 1: fetch all restaurants (or filter normal columns like rating/status)
     let where = {};
 
-    if (cuisine?.length) where.cuisine = cuisine;
-    if (ratings?.length) where.rating = ratings;
-    if (price?.length) where.price = price;
-    if (mood?.length) where.mood = mood;
-    if (open?.length) where.status = open;
+    if (ratings.length) where.rating = ratings; // normal column
+    if (open.length) where.status = open;      // normal column
 
-    if (amenities?.length) {
-      where.amenities = {
-        $in: amenities
-      };
-    }
+    const restaurants = await Restaurant.findAll({ where });
 
-    const restaurants = await Restaurant.findAll({
-      where
+    // Step 2: filter JSON/text fields in JS
+    const filtered = restaurants.filter(r => {
+      // parse the JSON strings safely
+      const rCuisines = parseJSONField(r.cuisines);
+const rMoods = parseJSONField(r.moods);
+const rFeatures = parseJSONField(r.features);
+const rPrice = parseJSONField(r.priceRange);
+
+
+      // check if any of the filter values exist in the restaurant fields
+      const cuisineMatch = cuisine.length === 0 || cuisine.some(c => rCuisines.includes(c));
+      const moodMatch = mood.length === 0 || mood.some(m => rMoods.includes(m));
+      const featuresMatch = amenities.length === 0 || amenities.some(a => rFeatures.includes(a));
+      const priceMatch = price.length === 0 || price.some(p => rPrice.includes(p));
+
+      return cuisineMatch && moodMatch && featuresMatch && priceMatch;
     });
 
-    res.status(200).json(restaurants);
+    res.status(200).json({ data: filtered });
   } catch (error) {
+    console.error("FILTER RESTAURANTS ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
+

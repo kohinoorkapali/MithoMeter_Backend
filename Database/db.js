@@ -5,7 +5,7 @@ import { Sequelize } from "sequelize";
 export const sequelize = new Sequelize(
   "mithometer",    
   "postgres",     
-  "postgresql",    
+  "menuka",    
   {
     host: "localhost",
     dialect: "postgres",

@@ -31,4 +31,5 @@ restaurantRouter.delete("/:id", deleteById);
 
 
 restaurantRouter.post("/filter", filterRestaurants);
+
 export default restaurantRouter;
