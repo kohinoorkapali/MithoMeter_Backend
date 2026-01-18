@@ -29,4 +29,9 @@ export const User = sequelize.define("User", {
     type: DataTypes.STRING,
     defaultValue: "user", 
   },
+  status: {
+    type: DataTypes.ENUM("active", "banned"),
+    allowNull: false,
+    defaultValue: "active",
+  }  
 });

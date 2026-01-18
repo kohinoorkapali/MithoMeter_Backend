@@ -6,7 +6,6 @@ import path from "path";
 import { Restaurant } from "../Model/restaurantModel.js";
 import { restaurantUploader } from "../middleware/uploads.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
-import upload from "../middleware/uploads.js";
 
 const restaurantRouter = express.Router();
 
