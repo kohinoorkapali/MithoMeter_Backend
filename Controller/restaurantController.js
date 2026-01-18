@@ -107,3 +107,38 @@ export const deleteById = async (req, res) => {
     res.status(500).send({ message: e.message });
   }
 };
+
+export const filterRestaurants = async (req, res) => {
+  const {
+    cuisine,
+    ratings,
+    price,
+    mood,
+    amenities,
+    open
+  } = req.body;
+
+  try {
+    let where = {};
+
+    if (cuisine?.length) where.cuisine = cuisine;
+    if (ratings?.length) where.rating = ratings;
+    if (price?.length) where.price = price;
+    if (mood?.length) where.mood = mood;
+    if (open?.length) where.status = open;
+
+    if (amenities?.length) {
+      where.amenities = {
+        $in: amenities
+      };
+    }
+
+    const restaurants = await Restaurant.findAll({
+      where
+    });
+
+    res.status(200).json(restaurants);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
