@@ -1,14 +1,15 @@
-// src/routes/reviewRoutes.js
 import express from "express";
-import { getReviewsByRestaurant, addReview } from "../Controller/reviewController.js";
-import { reviewPhotoUploader } from "../middleware/uploads.js"; // optional photos
+import {
+  getReviewsByRestaurant,
+  getReviewsByUser,
+  addReview
+} from "../Controller/reviewController.js";
+import { reviewPhotoUploader } from "../middleware/uploads.js";
 
 const router = express.Router();
 
-// Get all reviews for a restaurant
-router.get("/:restaurantId", getReviewsByRestaurant);
-
-// Add a review (photos optional)
+router.get("/restaurant/:restaurantId", getReviewsByRestaurant);
+router.get("/user/:userId", getReviewsByUser); 
 router.post("/", reviewPhotoUploader.array("photos", 5), addReview);
 
 export default router;

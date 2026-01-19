@@ -29,4 +29,8 @@ export const User = sequelize.define("User", {
     type: DataTypes.STRING,
     defaultValue: "user", 
   },
+   profile_image: {
+    type: DataTypes.STRING,
+    allowNull: true, // optional
+  },
 });

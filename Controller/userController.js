@@ -63,31 +63,27 @@ export const getById = async (req, res) => {
 export const updateById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullname, username, email, password } = req.body;
+    const { username } = req.body;
 
     const user = await User.findOne({ where: { id } });
-
     if (!user) {
-      return res.status(404).send({
-        message: "User not found",
-      });
+      return res.status(404).send({ message: "User not found" });
     }
 
-    user.fullname = fullname ?? user.fullname;
-    user.username = username ?? user.username;
-    user.email = email ?? user.email;
-    user.password = password ?? user.password;
+    // Only allow username update
+    if (username) user.username = username;
 
     await user.save();
 
     res.status(200).send({
       data: user,
-      message: "User updated successfully",
+      message: "Profile updated successfully",
     });
   } catch (e) {
     res.status(500).send({ message: e.message });
   }
 };
+
 
 export const deleteById = async (req, res) => {
   try {
@@ -108,5 +104,35 @@ export const deleteById = async (req, res) => {
     });
   } catch (e) {
     res.status(500).send({ message: e.message });
+  }
+};
+export const updateProfileWithImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username } = req.body;
+    const profileImage = req.file?.filename;
+
+    const user = await User.findOne({ where: { id } });
+    if (!user) return res.status(404).send({ message: "User not found" });
+
+    // Only update username if non-empty
+    if (username && username.trim() !== "") {
+      user.username = username;
+    }
+
+    // Only update profile_image if file uploaded
+    if (profileImage) {
+      user.profile_image = profileImage;
+    }
+
+    await user.save();
+
+    res.status(200).send({
+      data: user,
+      message: "Profile updated successfully",
+    });
+  } catch (err) {
+    console.error(err); // log the exact error
+    res.status(500).send({ message: err.message });
   }
 };
