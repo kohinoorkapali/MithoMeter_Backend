@@ -4,16 +4,20 @@ import { connection } from "./Database/db.js";
 import { userRouter } from "./Routes/userRoutes.js";
 import authRouter from "./Routes/authRoutes.js"; 
 import restaurantRouter from "./Routes/restaurantRoutes.js";
+import favoriteRoutes from "./Routes/favoriteRoutes.js";
 
 import { createAdminIfNotExists } from "./Model/createAdmin.js";
 
 import "./Model/restaurantModel.js";
 import "./Model/userModel.js";
 
+import "./Model/FavoriteModel.js";
+
+
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5175",
+  origin: "http://localhost:5173",
   methods: ["GET", "POST", "PATCH", "DELETE"],
   credentials: true,
 }));
@@ -37,6 +41,7 @@ connection()
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/restaurants", restaurantRouter);
+app.use("/api/favorites", favoriteRoutes);
 
 // Landing page
 app.get("/", (req, res) => res.send("User API is running"));
