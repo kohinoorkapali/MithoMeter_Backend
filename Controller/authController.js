@@ -70,6 +70,12 @@ export const login = async (req, res) => {
       return res.status(404).send({ message: "User not found" });
     }
 
+    if (user.status === "banned"){
+      return res.status(403).json({
+        message:"Your account has been banned. Please contact support."
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).send({ message: "Password is incorrect" });
