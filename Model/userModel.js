@@ -33,5 +33,9 @@ export const User = sequelize.define("User", {
     type: DataTypes.ENUM("active", "banned"),
     allowNull: false,
     defaultValue: "active",
-  }  
+  },
+  profileImage: {
+    type: DataTypes.STRING,
+    allowNull: true, // user may not have image
+  },  
 });

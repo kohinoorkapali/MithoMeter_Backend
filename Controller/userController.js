@@ -1,15 +1,45 @@
 import { User } from "../Model/userModel.js";
 
-
 export const getAll = async (req, res) => {
   try {
-    const users = await User.findAll();
-    res.status(200).send({
-      data: users,
-      message: "Users retrieved successfully",
+    const users = await User.findAll({
+      attributes: [
+        "id",
+        "username",
+        "email",
+        "profileImage",
+        "createdAt",
+        "status"
+      ],
+      order: [["createdAt", "DESC"]],
     });
-  } catch (e) {
-    res.status(500).send({ message: e.message });
+
+    res.status(200).json({ data: users });
+  } catch (err) {
+    console.error("GET USERS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const toggleUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.status = user.status === "banned" ? "active" : "banned";
+    await user.save();
+
+    res.status(200).json({
+      message: `User ${user.status}`,
+      status: user.status,
+    });
+  } catch (err) {
+    console.error("USER STATUS ERROR:", err);
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -110,3 +140,4 @@ export const deleteById = async (req, res) => {
     res.status(500).send({ message: e.message });
   }
 };
+

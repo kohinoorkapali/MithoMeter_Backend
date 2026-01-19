@@ -19,7 +19,7 @@ import "./Model/reviewModel.js"; // ← make sure Review model is imported
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "http://localhost:5174",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
 }));
