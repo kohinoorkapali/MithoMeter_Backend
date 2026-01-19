@@ -3,6 +3,7 @@ import { User } from "../Model/userModel.js";
 export const getAll = async (req, res) => {
   try {
     const users = await User.findAll({
+      where: {role: "user"},
       attributes: [
         "id",
         "username",
@@ -24,21 +25,26 @@ export const getAll = async (req, res) => {
 export const toggleUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
+    const user = await User.findOne({
+      where: {id, role: "user"},
+    });
 
-    const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.status = user.status === "banned" ? "active" : "banned";
-    await user.save();
+    const newStatus = user.status === "banned" ? "active" : "banned";
+    await user.update({status :newStatus});
 
     res.status(200).json({
-      message: `User ${user.status}`,
-      status: user.status,
+      status: newStatus,
+      message: `User ${
+        newStatus === "banned" ? "banned" : "unbanned"
+      } successfully`,
     });
+    
   } catch (err) {
-    console.error("USER STATUS ERROR:", err);
+    console.error("TOGGLE USER STATUS ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };

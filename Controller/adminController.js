@@ -4,7 +4,9 @@ import { Review } from "../Model/reviewModel.js";
 
 export const getAnalytics = async (req, res) => {
   try {
-    const totalUsers = await User.count();
+    const totalUsers = await User.count({
+      where: {role: "user"}
+    });
 
     const totalRestaurants = await Restaurant.count();
 
