@@ -70,13 +70,23 @@ export const addReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+export const reportReview = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-export const reportReview = async(req, res)=>{
-  const {id } = req.params;
-  await Review.update({is_reported: true,
-    reported_at: new Date()
-  },
-  {where: {id}}
-);
-res.json({message:"Review reported"})
-}
+    const updated = await Review.update(
+      {
+        isReported: true,
+        reportedAt: new Date()
+      },
+      {
+        where: { reviewId: id }
+      }
+    );
+
+    res.json({ message: "Review reported", updated });
+  } catch (error) {
+    console.error("Report review error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};

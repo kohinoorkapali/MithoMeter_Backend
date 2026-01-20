@@ -34,3 +34,13 @@ export const getAnalytics = async (req, res) => {
     });
   }
 };
+
+export const getReportedReviews = async (req, res) => {
+  const reviews = await Review.findAll({
+    where: { isReported: true },
+    order: [["reportedAt", "DESC"]]
+  });
+
+  res.json(reviews);
+};
+
