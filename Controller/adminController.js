@@ -11,7 +11,9 @@ export const getAnalytics = async (req, res) => {
     const totalRestaurants = await Restaurant.count();
 
     const activeUsers = await User.count({
-      where: { status: "active" } 
+      where: { status: "active",
+        role: "user"
+       } 
     });
 
     const helpfulChecks = (await Review.sum("likes")) || 0;

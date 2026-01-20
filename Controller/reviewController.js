@@ -70,3 +70,13 @@ export const addReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const reportReview = async(req, res)=>{
+  const {id } = req.params;
+  await Review.update({is_reported: true,
+    reported_at: new Date()
+  },
+  {where: {id}}
+);
+res.json({message:"Review reported"})
+}
