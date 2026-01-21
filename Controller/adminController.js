@@ -1,6 +1,7 @@
 import { User } from "../Model/userModel.js";
 import { Restaurant } from "../Model/restaurantModel.js";
 import { Review } from "../Model/reviewModel.js";
+import { Notification } from "../Model/notificationModel.js";
 
 export const getAnalytics = async (req, res) => {
   try {
@@ -37,7 +38,10 @@ export const getAnalytics = async (req, res) => {
 
 export const getReportedReviews = async (req, res) => {
   const reviews = await Review.findAll({
-    where: { isReported: true },
+    where: { 
+      isReported: true,
+      isHidden: false,
+     },
     order: [["reportedAt", "DESC"]]
   });
 
@@ -51,13 +55,46 @@ export const approveReportedReview = async (req, res) => {
     {
       isReported: false,
       reportedAt: null,
+      isHidden: false, 
     },
-    { where: { reviewId: id } }
+    {
+      where: {
+        reviewId: id,
+      },
+    }
   );
-
   if (updated === 0) {
     return res.status(404).json({ message: "Review not found" });
   }
+  res.json({ message: "Review approved and restored" });
+};
 
-  res.json({ message: "Review approved" });
+export const deleteReportedReview = async (req, res) => {
+  const { id } = req.params;
+
+  const review = await Review.findOne({ where: { reviewId: id } });
+
+  if (!review) {
+    return res.status(404).json({ message: "Review not found" });
+  }
+
+  // Soft delete (hide)
+  await Review.update(
+    { isHidden: true },
+    { where: { reviewId: id } }
+  );
+
+  // Create notification (ONLY ONCE)
+  await Notification.findOrCreate({
+    where: {
+      userId: review.userId,
+      reviewId: review.reviewId,
+      message: "One of your reviews was removed by the admin for violating guidelines.",
+    },
+    defaults: {
+      isRead: false,
+    },
+  });
+
+  res.json({ message: "Review hidden and user notified" });
 };

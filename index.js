@@ -9,6 +9,7 @@ import authRouter from "./Routes/authRoutes.js";
 import restaurantRouter from "./Routes/restaurantRoutes.js";
 import reviewRouter from "./Routes/reviewRoutes.js"; 
 import adminRouter from "./Routes/adminRoutes.js"; 
+import notificationRouter from "./Routes/notificationRoutes.js"; 
 
 import { createAdminIfNotExists } from "./Model/createAdmin.js";
 
@@ -48,6 +49,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/restaurants", restaurantRouter);
 app.use("/api/reviews", reviewRouter); 
 app.use("/api/admin", adminRouter);
+app.use("/api/notifications", notificationRouter);
+
 // Landing page
 app.get("/", (req, res) => res.send("User API is running"));
 

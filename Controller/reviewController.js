@@ -6,7 +6,8 @@ export const getReviewsByRestaurant = async (req, res) => {
     const { restaurantId } = req.params;
 
     const reviews = await Review.findAll({
-      where: { restaurantId },
+      where: { restaurantId, 
+        isHidden:false },
       order: [["date", "DESC"]],
     });
 

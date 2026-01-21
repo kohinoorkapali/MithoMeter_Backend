@@ -41,6 +41,10 @@ export const Review = sequelize.define("Review", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  isHidden: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  }  
 });
 
 Restaurant.hasMany(Review, { foreignKey: "restaurantId" });
