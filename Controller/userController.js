@@ -88,17 +88,13 @@ export const updateById = async (req, res) => {
 export const deleteById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const user = await User.findOne({ where: { id } });
-
     if (!user) {
       return res.status(404).send({
         message: "User not found",
       });
     }
-
     await user.destroy();
-
     res.status(200).send({
       message: "User deleted successfully",
     });

@@ -151,7 +151,6 @@ export const toggleLike = async (req, res) => {
       liked = true;
     }
 
-    // Update total likes in Review table
     const likes = await ReviewLike.count({ where: { reviewId } });
     await Review.update({ likes }, { where: { reviewId } });
 
