@@ -1,115 +1,62 @@
+import { Favorite } from "../Model/FavoriteModel.js";
 import { Restaurant } from "../Model/restaurantModel.js";
-import { isRestaurantOpen } from "../utils/timeUtils.js";
 
-const parseJSONField = (field) => {
-  if (!field) return [];
-  if (Array.isArray(field)) return field;
+export const FavoriteController = {
+  async saveFavorite(req, res) {
+  const { userId, restaurantId } = req.body;
+
+  if (!userId || !restaurantId) {
+    return res.status(400).json({ message: "Missing userId or restaurantId" });
+  }
 
   try {
-    return JSON.parse(field);
+    const [favorite, created] = await Favorite.findOrCreate({
+      where: { userId, restaurantId },
+    });
+
+    return res.status(200).json({
+      message: created ? "Saved successfully" : "Already saved",
+      favorite,
+    });
   } catch (error) {
-    console.error("JSON parse error:", field);
-    return [];
+    return res.status(500).json({ message: "Error saving", error });
   }
-};
+},
 
-export const saveRestaurant = async (req, res) => {
+
+
+  // Get all favorite restaurants for a user
+async getFavorites(req, res) {
+  const { userId } = req.params;
+
   try {
-    const {
-      name,
-      location,
-      cuisines,
-      priceRange,
-      openTime,
-      closeTime,
-      description,
-      websiteLink,
-      menuLink,
-      moods,
-      features,
-    } = req.body;
-
-    if (!name || !location || !openTime || !closeTime || !description) {
-      return res.status(400).json({ message: "Required fields are missing" });
-    }
-    console.log("REQ BODY:", req.body);
-console.log("REQ FILES:", req.files);
-
-
-    const restaurant = await Restaurant.create({
-      name,
-      location,
-      cuisines: parseJSONField(cuisines),
-      priceRange: parseJSONField(priceRange),
-      openTime,
-      closeTime,
-      description,
-      websiteLink,
-      menuLink,
-      moods: parseJSONField(moods),
-      features: parseJSONField(features),
-      photos: req.files?.map((file) => file.path) || [],
+    const favorites = await Favorite.findAll({
+      where: { userId },
+      include: [{ model: Restaurant }], // not string
     });
-
-    res.status(201).json({
-      data: restaurant,
-      message: "Restaurant saved successfully",
-    });
-  } catch (e) {
-    console.error("🔥 SAVE RESTAURANT ERROR:", e);
-    res.status(500).json({ message: e.message });
+    res.status(200).json(favorites);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching", error });
   }
-};
-
-export const getAllRestaurants = async (req, res) => {
-  try {
-    const restaurants = await Restaurant.findAll();
-
-    const updatedRestaurants = restaurants.map(r => {
-      const restaurant = r.toJSON(); // Sequelize instance → plain object
-
-      return {
-        ...restaurant,
-        // normalize these fields into arrays
-        cuisines: parseJSONField(restaurant.cuisines),
-        priceRange: parseJSONField(restaurant.priceRange),
-        moods: parseJSONField(restaurant.moods),
-        features: parseJSONField(restaurant.features),
-        isOpen: isRestaurantOpen(
-          restaurant.openTime,
-          restaurant.closeTime
-        )
-      };
-    });
-
-    res.status(200).send({
-      data: updatedRestaurants,
-      message: "Restaurants retrieved successfully",
-    });
-  } catch (e) {
-    res.status(500).send({ message: e.message });
-  }
-};
+},
 
 
-export const deleteById = async (req, res) => {
-  try {
-    const { id } = req.params;
+  // Remove a restaurant from favorites
+  async deleteFavorite(req, res) {
+    const { userId, restaurantId } = req.params;
 
-    const restaurant = await Restaurant.findOne({ where: { restaurantId: id } });
-
-    if (!restaurant) {
-      return res.status(404).send({
-        message: "Restaurant not found",
+    try {
+      const deleted = await Favorite.destroy({
+        where: { userId, restaurantId },
       });
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Not found" });
+      }
+
+      res.status(200).json({ message: "Deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting", error });
     }
-
-    await restaurant.destroy();
-
-    res.status(200).send({
-      message: "Restaurant deleted successfully",
-    });
-  } catch (e) {
-    res.status(500).send({ message: e.message });
-  }
+  },
 };
