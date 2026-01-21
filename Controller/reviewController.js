@@ -26,7 +26,6 @@ export const getReviewsByRestaurant = async (req, res) => {
   }
 };
 
-
 export const addReview = async (req, res) => {
   try {
     const {
@@ -70,6 +69,7 @@ export const addReview = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 export const reportReview = async (req, res) => {
   try {
     const { id } = req.params;

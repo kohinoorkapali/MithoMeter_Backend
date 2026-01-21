@@ -44,3 +44,20 @@ export const getReportedReviews = async (req, res) => {
   res.json(reviews);
 };
 
+export const approveReportedReview = async (req, res) => {
+  const { id } = req.params;
+
+  const [updated] = await Review.update(
+    {
+      isReported: false,
+      reportedAt: null,
+    },
+    { where: { reviewId: id } }
+  );
+
+  if (updated === 0) {
+    return res.status(404).json({ message: "Review not found" });
+  }
+
+  res.json({ message: "Review approved" });
+};
