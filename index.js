@@ -15,6 +15,8 @@ import "./Model/userModel.js";
 import "./Model/reviewModel.js"; 
 import "./Model/FavoriteModel.js";
 
+import deleteRoutes from "./Routes/deleteRoutes.js";
+
 
 const app = express();
 
@@ -44,9 +46,12 @@ app.use("/api/auth", authRouter);
 app.use("/api/restaurants", restaurantRouter);
 app.use("/api/reviews", reviewRouter); // ← register the review routes
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/reviews", deleteRoutes);
+
 
 // Landing page
 app.get("/", (req, res) => res.send("User API is running"));
 
 // Start server
 app.listen(5000, () => console.log("Server running on port 5000"));
+
