@@ -8,7 +8,8 @@ export const getReviewsByRestaurant = async (req, res) => {
     const { restaurantId } = req.params;
 
     const reviews = await Review.findAll({
-      where: { restaurantId },
+      where: { restaurantId, 
+        isHidden:false },
       order: [["date", "DESC"]],
       include: [
         {
@@ -158,5 +159,25 @@ export const toggleLike = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+export const reportReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updated = await Review.update(
+      {
+        isReported: true,
+        reportedAt: new Date()
+      },
+      {
+        where: { reviewId: id }
+      }
+    );
+
+    res.json({ message: "Review reported", updated });
+  } catch (error) {
+    console.error("Report review error:", error);
+    res.status(500).json({ message: error.message });
+  }
+}
   }
 };

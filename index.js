@@ -1,12 +1,16 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from "url";
+
 import { connection } from "./Database/db.js";
 import { userRouter } from "./Routes/userRoutes.js";
 import authRouter from "./Routes/authRoutes.js"; 
 import restaurantRouter from "./Routes/restaurantRoutes.js";
 import reviewRouter from "./Routes/reviewRoutes.js"; 
 import favoriteRoutes from "./Routes/favoriteRoutes.js";
+import adminRouter from "./Routes/adminRoutes.js"; 
+import notificationRouter from "./Routes/notificationRoutes.js"; 
 
 import { createAdminIfNotExists } from "./Model/createAdmin.js";
 
@@ -22,13 +26,17 @@ const app = express();
 
 app.use(cors({
   origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
 }));
 
 
 app.use(express.json());
 
+// Serve uploaded images
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/uploads", express.static(path.resolve("./uploads")));
 
@@ -47,7 +55,8 @@ app.use("/api/restaurants", restaurantRouter);
 app.use("/api/reviews", reviewRouter); // ← register the review routes
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/reviews", deleteRoutes);
-
+app.use("/api/admin", adminRouter);
+app.use("/api/notifications", notificationRouter);
 
 // Landing page
 app.get("/", (req, res) => res.send("User API is running"));
