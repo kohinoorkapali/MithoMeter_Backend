@@ -3,7 +3,9 @@ import {
   getReviewsByRestaurant, 
   getReviewsByUser, 
   addReview, 
-  reportReview 
+  reportReview ,
+  updateReview,
+  getReviewById   
 } from "../Controller/reviewController.js";
 import { reviewPhotoUploader } from "../middleware/uploads.js"; // optional photos
 
@@ -20,5 +22,15 @@ reviewRouter.post("/", reviewPhotoUploader.array("photos", 5), addReview);
 
 // Report a review
 reviewRouter.post("/:id/report", reportReview);
+
+
+reviewRouter.get("/:id", getReviewById);
+
+reviewRouter.put(
+  "/:id",
+  reviewPhotoUploader.array("photos", 5), // ← handle files
+  updateReview
+);
+
 
 export default reviewRouter;

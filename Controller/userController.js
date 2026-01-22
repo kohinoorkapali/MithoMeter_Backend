@@ -8,7 +8,7 @@ export const getAll = async (req, res) => {
         "id",
         "username",
         "email",
-        "profileImage",
+        "profile_image",
         "createdAt",
         "status"
       ],

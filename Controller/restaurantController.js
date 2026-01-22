@@ -1,101 +1,130 @@
-import { Favorite } from "../Model/FavoriteModel.js";
+// Controller/restaurantController.js
 import { Restaurant } from "../Model/restaurantModel.js";
+import fs from "fs";
+import path from "path";
+import { isRestaurantOpen } from "../utils/timeUtils.js";
 
-export const FavoriteController = {
-  async saveFavorite(req, res) {
-  const { userId, restaurantId } = req.body;
-
-  if (!userId || !restaurantId) {
-    return res.status(400).json({ message: "Missing userId or restaurantId" });
-  }
-
+// Helper: safely parse JSON fields
+const parseJSONField = (field) => {
+  if (!field) return [];
+  if (Array.isArray(field)) return field;
   try {
-    const [favorite, created] = await Favorite.findOrCreate({
-      where: { userId, restaurantId },
-    });
-
-    return res.status(200).json({
-      message: created ? "Saved successfully" : "Already saved",
-      favorite,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Error saving", error });
-  }
-},
-
-
-
-  // Get all favorite restaurants for a user
-async getFavorites(req, res) {
-  const { userId } = req.params;
-
-  try {
-    const favorites = await Favorite.findAll({
-      where: { userId },
-      include: [{ model: Restaurant }], // not string
-    });
-    res.status(200).json(favorites);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching", error });
-  }
-},
-
-export const getRestaurantById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const restaurant = await Restaurant.findOne({
-      where: { restaurantId: id },
-    });
-
-    if (!restaurant) {
-      return res.status(404).json({
-        message: "Restaurant not found",
-      });
-    }
-
-    res.status(200).json({
-      data: restaurant,
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    return JSON.parse(field);
+  } catch {
+    return [];
   }
 };
 
-export const updateRestaurantById = async (req, res) => {
-  console.log(" PATCH HIT");
-  console.log(" BODY:", req.body);
-  console.log(" FILES:", req.files);
+/* ============================================================
+   CREATE RESTAURANT
+============================================================ */
+export const saveRestaurant = async (req, res) => {
+  try {
+    const { name, location, openTime, closeTime, description } = req.body;
+    if (!name || !location || !openTime || !closeTime || !description) {
+      return res.status(400).json({ message: "Required fields are missing" });
+    }
 
+    const photos = req.files?.map((file) => file.filename) || [];
+
+    const newRestaurant = await Restaurant.create({
+      name,
+      location,
+      openTime,
+      closeTime,
+      description,
+      websiteLink: req.body.websiteLink || null,
+      menuLink: req.body.menuLink || null,
+      cuisines: parseJSONField(req.body.cuisines),
+      priceRange: parseJSONField(req.body.priceRange),
+      moods: parseJSONField(req.body.moods),
+      features: parseJSONField(req.body.features),
+      photos,
+    });
+
+    res.status(201).json({
+      message: "Restaurant saved successfully",
+      restaurant: newRestaurant,
+    });
+  } catch (err) {
+    console.error("SAVE RESTAURANT ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* ============================================================
+   GET ALL RESTAURANTS
+============================================================ */
+export const getAllRestaurants = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.findAll();
+
+    const normalizedRestaurants = restaurants.map((r) => {
+      const plain = r.toJSON();
+      let photos = plain.photos;
+      if (typeof photos === "string") {
+        try {
+          photos = JSON.parse(photos);
+        } catch {
+          photos = [];
+        }
+      }
+      if (!Array.isArray(photos)) photos = [];
+      plain.photos = photos.map((filename) => `/uploads/restaurants/${filename}`);
+      plain.isOpen = isRestaurantOpen(plain.openTime, plain.closeTime);
+      return plain;
+    });
+
+    res.status(200).json({ data: normalizedRestaurants });
+  } catch (err) {
+    console.error("GET ALL RESTAURANTS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* ============================================================
+   GET SINGLE RESTAURANT
+============================================================ */
+export const getRestaurantById = async (req, res) => {
   try {
     const { id } = req.params;
+    const restaurant = await Restaurant.findOne({ where: { restaurantId: id } });
 
+    if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+
+    const plain = restaurant.toJSON();
+    plain.photos = (plain.photos || []).map((filename) => `/uploads/restaurants/${filename}`);
+    plain.isOpen = isRestaurantOpen(plain.openTime, plain.closeTime);
+
+    res.status(200).json({ data: plain });
+  } catch (err) {
+    console.error("GET SINGLE RESTAURANT ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* ============================================================
+   UPDATE RESTAURANT
+============================================================ */
+export const updateRestaurantById = async (req, res) => {
+  try {
+    const { id } = req.params;
     const restaurant = await Restaurant.findByPk(id);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Not found" });
-    }
-        
+    if (!restaurant) return res.status(404).json({ message: "Not found" });
+
     // Existing photos
     let existingPhotos = [];
     if (req.body.existingPhotos) {
-      existingPhotos = JSON.parse(req.body.existingPhotos).map(p =>
+      existingPhotos = parseJSONField(req.body.existingPhotos).map((p) =>
         p.replace(/\\/g, "/").replace(/^.*\/uploads\//, "uploads/")
       );
     }
 
     // New uploads
-    let newPhotos = [];
-    if (req.files?.length) {
-      newPhotos = req.files.map(file =>
-        file.path
-          .replace(/\\/g, "/")
-          .replace(/^.*\/uploads\//, "uploads/")
-      );
-    }
+    const newPhotos = req.files?.map((file) =>
+      file.path.replace(/\\/g, "/").replace(/^.*\/uploads\//, "uploads/")
+    ) || [];
 
-    // Merge photos
     restaurant.photos = [...existingPhotos, ...newPhotos];
 
     // Update other fields
@@ -104,43 +133,45 @@ export const updateRestaurantById = async (req, res) => {
     restaurant.openTime = req.body.openTime;
     restaurant.closeTime = req.body.closeTime;
     restaurant.description = req.body.description;
-    restaurant.websiteLink = req.body.websiteLink;
-    restaurant.menuLink = req.body.menuLink;
-
-    restaurant.cuisines = JSON.parse(req.body.cuisines);
-    restaurant.priceRange = JSON.parse(req.body.priceRange);
-    restaurant.moods = JSON.parse(req.body.moods);
-    restaurant.features = JSON.parse(req.body.features);
-
-    console.log("FINAL PHOTOS TO SAVE:", restaurant.photos);
+    restaurant.websiteLink = req.body.websiteLink || null;
+    restaurant.menuLink = req.body.menuLink || null;
+    restaurant.cuisines = parseJSONField(req.body.cuisines);
+    restaurant.priceRange = parseJSONField(req.body.priceRange);
+    restaurant.moods = parseJSONField(req.body.moods);
+    restaurant.features = parseJSONField(req.body.features);
 
     await restaurant.save();
 
     res.json({ message: "Restaurant updated successfully" });
   } catch (err) {
-    console.error("UPDATE ERROR:", err);
+    console.error("UPDATE RESTAURANT ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };
 
+/* ============================================================
+   DELETE RESTAURANT
+============================================================ */
+export const deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = await Restaurant.findByPk(id);
+    if (!restaurant) return res.status(404).json({ message: "Not found" });
 
-
-  // Remove a restaurant from favorites
-  async deleteFavorite(req, res) {
-    const { userId, restaurantId } = req.params;
-
-    try {
-      const deleted = await Favorite.destroy({
-        where: { userId, restaurantId },
-      });
-
-      if (!deleted) {
-        return res.status(404).json({ message: "Not found" });
+    // Delete images
+    (restaurant.photos || []).forEach((filename) => {
+      const filePath = path.join("uploads", "restaurants", filename);
+      try {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error("Failed to delete image:", filePath, err);
       }
+    });
 
-      res.status(200).json({ message: "Deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Error deleting", error });
-    }
-  },
+    await restaurant.destroy();
+    res.json({ message: "Restaurant deleted successfully" });
+  } catch (err) {
+    console.error("DELETE RESTAURANT ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
 };
