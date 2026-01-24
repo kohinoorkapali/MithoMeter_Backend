@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { sequelize } from "./Database/db.js";
 
 import { connection } from "./Database/db.js";
 import { userRouter } from "./Routes/userRoutes.js";
@@ -11,8 +12,9 @@ import reviewRouter from "./Routes/reviewRoutes.js";
 import favoriteRoutes from "./Routes/favoriteRoutes.js";
 import adminRouter from "./Routes/adminRoutes.js"; 
 import notificationRouter from "./Routes/notificationRoutes.js"; 
-
+import { PasswordResetToken } from "./Model/passwordResetTokenModel.js";
 import { createAdminIfNotExists } from "./Model/createAdmin.js";
+import { forgotRouter } from "./Routes/forgotRoutes.js";
 
 import "./Model/restaurantModel.js";
 import "./Model/userModel.js";
@@ -48,6 +50,9 @@ connection()
   .then(async () => {
     console.log("Database connected");
     await createAdminIfNotExists();
+
+    // ensure the table exists
+    await sequelize.sync({ alter: true });
   })
   .catch((err) => console.error("DB connection failed:", err));
 
@@ -60,6 +65,8 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/reviews", deleteRoutes);
 app.use("/api/admin", adminRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/forgot", forgotRouter);
+
 
 // Landing page
 app.get("/", (req, res) => res.send("User API is running"));
