@@ -7,6 +7,7 @@ import { ReviewLike } from "../Model/reviewLikeModel.js"; // make sure you have 
 export const getReviewsByRestaurant = async (req, res) => {
   try {
     const { restaurantId } = req.params;
+    const { userId } = req.query; // send currentUser.id from frontend
 
     const reviews = await Review.findAll({
       where: { restaurantId, isHidden: false },
@@ -14,14 +15,19 @@ export const getReviewsByRestaurant = async (req, res) => {
       include: [
         {
           model: User,
-          as: "user", // make sure Review.belongsTo(User, { as: 'user', ... }) exists
+          as: "user",
           attributes: ["username", "profile_image"],
+        },
+        {
+          model: ReviewLike,
+          attributes: ["userId"],   // needed to check liked
         },
       ],
     });
 
     const normalizedReviews = reviews.map((r) => {
       const review = r.toJSON();
+
       review.photos = Array.isArray(review.photos)
         ? review.photos
         : JSON.parse(review.photos || "[]");
@@ -29,7 +35,17 @@ export const getReviewsByRestaurant = async (req, res) => {
       review.username = review.user?.username || review.username;
       review.profile = review.user?.profile_image || null;
 
+      // total likes
+      review.likes = review.ReviewLikes.length;
+
+      // whether current user liked it
+      review.liked = userId
+        ? review.ReviewLikes.some((l) => l.userId === Number(userId))
+        : false;
+
       delete review.user;
+      delete review.ReviewLikes;
+
       return review;
     });
 
@@ -39,6 +55,7 @@ export const getReviewsByRestaurant = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // GET all reviews by a user
 export const getReviewsByUser = async (req, res) => {

@@ -5,7 +5,8 @@ import {
   addReview, 
   reportReview ,
   updateReview,
-  getReviewById   
+  getReviewById,
+  toggleLike           
 } from "../Controller/reviewController.js";
 import { reviewPhotoUploader } from "../middleware/uploads.js"; // optional photos
 
@@ -23,6 +24,7 @@ reviewRouter.post("/", reviewPhotoUploader.array("photos", 5), addReview);
 // Report a review
 reviewRouter.post("/:id/report", reportReview);
 
+reviewRouter.patch("/:reviewId/like", toggleLike);
 
 reviewRouter.get("/:id", getReviewById);
 

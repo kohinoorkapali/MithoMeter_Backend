@@ -1,8 +1,6 @@
-// src/Model/reviewLikeModel.js
+// src/models/reviewLikeModel.js
 import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js";
-import { Review } from "./reviewModel.js";
-import { User } from "./userModel.js";
 
 export const ReviewLike = sequelize.define(
   "ReviewLike",
@@ -12,18 +10,6 @@ export const ReviewLike = sequelize.define(
   },
   {
     timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ["reviewId", "userId"], // prevents duplicate likes
-      },
-    ],
+    indexes: [{ unique: true, fields: ["reviewId", "userId"] }],
   }
 );
-
-// Relations
-Review.hasMany(ReviewLike, { foreignKey: "reviewId", onDelete: "CASCADE" });
-ReviewLike.belongsTo(Review, { foreignKey: "reviewId" });
-
-User.hasMany(ReviewLike, { foreignKey: "userId", onDelete: "CASCADE" });
-ReviewLike.belongsTo(User, { foreignKey: "userId" });

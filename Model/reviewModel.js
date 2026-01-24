@@ -3,6 +3,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js";
 import { Restaurant } from "./restaurantModel.js";
 import { User } from "./userModel.js";
+import { ReviewLike } from "./reviewLikeModel.js";
 
 export const Review = sequelize.define("Review", {
   reviewId: {
@@ -52,3 +53,4 @@ Restaurant.hasMany(Review, { foreignKey: "restaurantId" });
 Review.belongsTo(Restaurant, { foreignKey: "restaurantId" });
 Review.belongsTo(User, { foreignKey: "userId", as: "user" });
 User.hasMany(Review, { foreignKey: "userId", as: "reviews" });
+

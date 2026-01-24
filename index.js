@@ -18,6 +18,9 @@ import "./Model/restaurantModel.js";
 import "./Model/userModel.js";
 import "./Model/reviewModel.js"; 
 import "./Model/FavoriteModel.js";
+import "./Model/reviewLikeModel.js";
+import "./Model/associations.js";
+
 
 import deleteRoutes from "./Routes/deleteRoutes.js";
 
