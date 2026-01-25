@@ -11,7 +11,7 @@ export const getReviewsByRestaurant = async (req, res) => {
 
     const reviews = await Review.findAll({
       where: { restaurantId, isHidden: false },
-      order: [["date", "DESC"]],
+      order: [["visitDate", "DESC"]],
       include: [
         {
           model: User,
@@ -64,7 +64,7 @@ export const getReviewsByUser = async (req, res) => {
 
     const reviews = await Review.findAll({
       where: { userId },
-      order: [["date", "DESC"]],
+      order: [["visitDate", "DESC"]],
       include: [
         {
           model: Restaurant,

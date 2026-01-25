@@ -3,7 +3,7 @@ import { Sequelize } from "sequelize";
 export const sequelize = new Sequelize(
   "mithometer",    
   "postgres",     
-  "postgresql",    
+  "kohinoor",    
   {
     host: "localhost",
     dialect: "postgres",
