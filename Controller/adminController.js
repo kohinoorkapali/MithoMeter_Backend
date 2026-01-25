@@ -2,6 +2,7 @@ import { User } from "../Model/userModel.js";
 import { Restaurant } from "../Model/restaurantModel.js";
 import { Review } from "../Model/reviewModel.js";
 import { Notification } from "../Model/notificationModel.js";
+import { Op } from "sequelize";
 
 export const getAnalytics = async (req, res) => {
   try {
@@ -38,11 +39,21 @@ export const getAnalytics = async (req, res) => {
 
 export const getReportedReviews = async (req, res) => {
   const reviews = await Review.findAll({
-    where: { 
-      isReported: true,
-      isHidden: false,
-     },
-    order: [["reportedAt", "DESC"]]
+    where: {
+      [Op.or]: [
+        { isReported: true }, // pending
+        { isHidden: true },   // hidden
+        { isReported: false, isHidden: false }, // approved
+      ],
+    },
+    include: [
+      {
+        model: User,
+        as: "user", 
+        attributes: ["username", "profile_image"], // only these fields
+      },
+    ],
+    order: [["reportedAt", "DESC"]],
   });
 
   res.json(reviews);
@@ -54,19 +65,18 @@ export const approveReportedReview = async (req, res) => {
   const [updated] = await Review.update(
     {
       isReported: false,
-      reportedAt: null,
-      isHidden: false, 
+      isHidden: false,
     },
     {
-      where: {
-        reviewId: id,
-      },
+      where: { reviewId: id },
     }
   );
-  if (updated === 0) {
+
+  if (!updated) {
     return res.status(404).json({ message: "Review not found" });
   }
-  res.json({ message: "Review approved and restored" });
+
+  res.json({ message: "Review approved" });
 };
 
 export const deleteReportedReview = async (req, res) => {
@@ -80,7 +90,9 @@ export const deleteReportedReview = async (req, res) => {
 
   // Soft delete (hide)
   await Review.update(
-    { isHidden: true },
+    { isHidden: true,
+      isReported: false,
+     },
     { where: { reviewId: id } }
   );
 
