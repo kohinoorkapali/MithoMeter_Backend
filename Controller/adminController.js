@@ -38,25 +38,32 @@ export const getAnalytics = async (req, res) => {
 };
 
 export const getReportedReviews = async (req, res) => {
-  const reviews = await Review.findAll({
-    where: {
-      [Op.or]: [
-        { isReported: true }, // pending
-        { isHidden: true },   // hidden
-        { isReported: false, isHidden: false }, // approved
-      ],
-    },
-    include: [
-      {
-        model: User,
-        as: "user", 
-        attributes: ["username", "profile_image"], // only these fields
+  try {
+    const reviews = await Review.findAll({
+      where: {
+        [Op.or]: [
+          { isReported: true },   // Pending
+          { isHidden: true },     // Hidden
+          { wasReported: true },  // Approved after report
+        ],
       },
-    ],
-    order: [["reportedAt", "DESC"]],
-  });
 
-  res.json(reviews);
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["username", "profile_image"],
+        },
+      ],
+
+      order: [["reportedAt", "DESC"]],
+    });
+
+    res.json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const approveReportedReview = async (req, res) => {
@@ -66,11 +73,11 @@ export const approveReportedReview = async (req, res) => {
     {
       isReported: false,
       isHidden: false,
+      // wasReported stays true
     },
-    {
-      where: { reviewId: id },
-    }
+    { where: { reviewId: id } }
   );
+  
 
   if (!updated) {
     return res.status(404).json({ message: "Review not found" });

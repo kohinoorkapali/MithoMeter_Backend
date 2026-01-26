@@ -147,9 +147,13 @@ export const reportReview = async (req, res) => {
     const { id } = req.params;
 
     const updated = await Review.update(
-      { isReported: true, reportedAt: new Date() },
+      {
+        isReported: false,
+        isHidden: false,
+        // wasReported stays true
+      },
       { where: { reviewId: id } }
-    );
+    );    
 
     res.json({ message: "Review reported", updated });
   } catch (error) {
