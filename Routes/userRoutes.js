@@ -1,12 +1,10 @@
 import express from "express";
 import {
-  getAll,
   save,
   getById,
   updateById,
   deleteById,
   updateProfileWithImage,
-  toggleUserStatus,
 } from "../Controller/userController.js";
 
 import { profileUploader } from "../middleware/uploads.js";

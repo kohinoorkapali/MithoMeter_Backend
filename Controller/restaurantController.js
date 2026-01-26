@@ -1,6 +1,8 @@
 // Controller/restaurantController.js
 import { Restaurant } from "../Model/restaurantModel.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
+import fs from "fs";
+import path from "path";
 
 // Helper: safely parse JSON fields
 const parseJSONField = (field) => {
@@ -97,6 +99,83 @@ export const getRestaurantById = async (req, res) => {
     res.status(200).json({ data: plain });
   } catch (err) {
     console.error("GET SINGLE RESTAURANT ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* ============================================================
+ UPDATE
+============================================================ */
+export const updateRestaurantById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = await Restaurant.findByPk(id);
+    if (!restaurant) return res.status(404).json({ message: "Not found" });
+
+    // Existing photos
+    let existingPhotos = [];
+    if (req.body.existingPhotos) {
+      existingPhotos = parseJSONField(req.body.existingPhotos).map((p) =>
+        p.replace(/\\/g, "/").replace(/^.*uploads\//, "")
+      );      
+    }
+
+    // New uploads
+    const newPhotos = req.files?.map((file) =>
+      file.path
+        .replace(/\\/g, "/")
+        .replace(/^.*uploads\//, "")
+
+    ) || [];
+
+    restaurant.photos = [...existingPhotos, ...newPhotos];
+
+    // Update other fields
+    restaurant.name = req.body.name;
+    restaurant.location = req.body.location;
+    restaurant.openTime = req.body.openTime;
+    restaurant.closeTime = req.body.closeTime;
+    restaurant.description = req.body.description;
+    restaurant.websiteLink = req.body.websiteLink || null;
+    restaurant.menuLink = req.body.menuLink || null;
+    restaurant.cuisines = parseJSONField(req.body.cuisines);
+    restaurant.priceRange = parseJSONField(req.body.priceRange);
+    restaurant.moods = parseJSONField(req.body.moods);
+    restaurant.features = parseJSONField(req.body.features);
+
+    await restaurant.save();
+
+    res.json({ message: "Restaurant updated successfully" });
+  } catch (err) {
+    console.error("UPDATE RESTAURANT ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* ============================================================
+ DELETE
+============================================================ */
+
+export const deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = await Restaurant.findByPk(id);
+    if (!restaurant) return res.status(404).json({ message: "Not found" });
+
+    // Delete images
+    (restaurant.photos || []).forEach((filename) => {
+      const filePath = path.join("uploads", filename);
+      try {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error("Failed to delete image:", filePath, err);
+      }
+    });
+
+    await restaurant.destroy();
+    res.json({ message: "Restaurant deleted successfully" });
+  } catch (err) {
+    console.error("DELETE RESTAURANT ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };

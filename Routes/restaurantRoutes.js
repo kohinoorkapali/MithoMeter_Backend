@@ -1,4 +1,4 @@
-import { deleteById, getAllRestaurants, getRestaurantById, saveRestaurant, updateRestaurantById } from "../Controller/restaurantController.js";
+import { deleteById, getAllRestaurants, getRestaurantById, saveRestaurant, updateRestaurantById} from "../Controller/restaurantController.js";
 // routes/restaurantRouter.js
 import express from "express";
 import fs from "fs";
@@ -135,5 +135,12 @@ restaurantRouter.get("/:id", async (req, res) => {
   }
 });
 
+restaurantRouter.patch(
+  "/:id",
+  restaurantUploader.array("photos", 5),
+  updateRestaurantById
+);
+
+restaurantRouter.delete("/:id", deleteById);
 
 export default restaurantRouter;
