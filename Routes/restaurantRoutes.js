@@ -135,41 +135,5 @@ restaurantRouter.get("/:id", async (req, res) => {
   }
 });
 
-/* ============================================================
-   DELETE RESTAURANT
-   ============================================================ */
-restaurantRouter.delete("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const restaurant = await Restaurant.findOne({
-      where: { restaurantId: id },
-    });
-
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
-    }
-
-    // Delete images from uploads folder
-    const photos = restaurant.photos || [];
-    photos.forEach((filename) => {
-      const filePath = path.join("uploads", "restaurants", filename);
-      try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      } catch (err) {
-        console.error("Failed to delete image:", filePath, err);
-      }
-    });
-
-    await restaurant.destroy();
-
-    res.status(200).json({ message: "Restaurant deleted successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-  }
-});
 
 export default restaurantRouter;
