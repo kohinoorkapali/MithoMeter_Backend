@@ -61,7 +61,7 @@ export const getReviewsByUser = async (req, res) => {
     const { userId } = req.params;
 
     const reviews = await Review.findAll({
-      where: { userId },
+       where: { userId, isHidden: false },
       order: [["visitDate", "DESC"]],
       include: [
         {
@@ -73,6 +73,23 @@ export const getReviewsByUser = async (req, res) => {
 
     const normalizedReviews = reviews.map((r) => {
       const review = r.toJSON();
+
+if (typeof review.ratings === "string") {
+    try {
+      review.ratings = JSON.parse(review.ratings);
+    } catch (err) {
+      review.ratings = {};
+    }
+  }
+
+  // Ensure all category ratings exist so frontend can calculate averages
+  review.ratings = {
+    ambience: review.ratings?.ambience || 0,
+    food: review.ratings?.food || 0,
+    service: review.ratings?.service || 0,
+    location: review.ratings?.location || 0,
+    value: review.ratings?.value || 0,
+  };
 
       review.photos = Array.isArray(review.photos)
         ? review.photos

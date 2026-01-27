@@ -1,5 +1,6 @@
 import { Favorite, Restaurant } from "../Model/associations.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
+import { Favorite } from "../Model/FavoriteModel.js";
 import fs from "fs";
 import path from "path";
 
@@ -173,6 +174,7 @@ export const deleteById = async (req, res) => {
   try {
     const { id } = req.params;
 
+
     const restaurant = await Restaurant.findByPk(id);
     if (!restaurant)
       return res.status(404).json({ message: "Not found" });
@@ -181,6 +183,7 @@ export const deleteById = async (req, res) => {
     await Favorite.destroy({
       where: { restaurantId: id },
     });
+
 
     // Delete images
     (restaurant.photos || []).forEach((filename) => {
