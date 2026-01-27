@@ -63,7 +63,7 @@ export const getReviewsByUser = async (req, res) => {
     const { userId } = req.params;
 
     const reviews = await Review.findAll({
-      where: { userId },
+       where: { userId, isHidden: false },
       order: [["visitDate", "DESC"]],
       include: [
         {
@@ -163,21 +163,23 @@ export const reportReview = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const updated = await Review.update(
+    const [rowsUpdated] = await Review.update(
       {
-        isReported: false,
+        isReported: true,
         isHidden: false,
-        // wasReported stays true
       },
       { where: { reviewId: id } }
-    );    
+    );
 
-    res.json({ message: "Review reported", updated });
+    if (rowsUpdated === 0) return res.status(404).json({ message: "Review not found" });
+
+    res.json({ message: "Review reported successfully" });
   } catch (error) {
     console.error("Report review error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // GET single review (only owner can access)
 export const getSingleReview = async (req, res) => {
