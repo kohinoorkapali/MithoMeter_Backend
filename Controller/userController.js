@@ -1,4 +1,5 @@
 import { User } from "../Model/associations.js";
+
 export const save = async (req, res) => {
   try {
     const { fullname, username, email, password } = req.body;

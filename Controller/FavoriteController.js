@@ -1,4 +1,4 @@
-import { Favorite } from "../Model/FavoriteModel.js";
+import { Favorite } from "../Model/associations.js";
 
 export const FavoriteController = {
 

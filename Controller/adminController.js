@@ -1,6 +1,4 @@
-import { User } from "../Model/userModel.js";
-import { Restaurant } from "../Model/restaurantModel.js";
-import { Review } from "../Model/reviewModel.js";
+import { Review, User, Restaurant } from "../Model/associations.js";
 import { Notification } from "../Model/notificationModel.js";
 import { Op } from "sequelize";
 

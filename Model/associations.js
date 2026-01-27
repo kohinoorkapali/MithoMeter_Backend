@@ -1,9 +1,9 @@
 import { sequelize } from "../Database/db.js";
-
 import { Restaurant } from "./restaurantModel.js";
 import { Favorite } from "./FavoriteModel.js";
 import { Review } from "./reviewModel.js";
 import { User } from "./userModel.js";
+import { ReviewLike } from "./reviewLikeModel.js";
 
 /* ============================
    FAVORITE ↔ RESTAURANT
@@ -12,7 +12,6 @@ Restaurant.hasMany(Favorite, {
   foreignKey: "restaurantId",
   onDelete: "CASCADE",
 });
-
 Favorite.belongsTo(Restaurant, {
   foreignKey: "restaurantId",
   onDelete: "CASCADE",
@@ -25,7 +24,6 @@ User.hasMany(Favorite, {
   foreignKey: "userId",
   onDelete: "CASCADE",
 });
-
 Favorite.belongsTo(User, {
   foreignKey: "userId",
   onDelete: "CASCADE",
@@ -38,7 +36,6 @@ Restaurant.hasMany(Review, {
   foreignKey: "restaurantId",
   onDelete: "CASCADE",
 });
-
 Review.belongsTo(Restaurant, {
   foreignKey: "restaurantId",
   onDelete: "CASCADE",
@@ -52,7 +49,6 @@ User.hasMany(Review, {
   as: "reviews",
   onDelete: "CASCADE",
 });
-
 Review.belongsTo(User, {
   foreignKey: "userId",
   as: "user",
@@ -60,12 +56,18 @@ Review.belongsTo(User, {
 });
 
 /* ============================
+   REVIEW ↔ REVIEWLIKE
+============================ */
+Review.hasMany(ReviewLike, {
+  foreignKey: "reviewId",
+  onDelete: "CASCADE",
+});
+ReviewLike.belongsTo(Review, {
+  foreignKey: "reviewId",
+  onDelete: "CASCADE",
+});
+
+/* ============================
    EXPORT
 ============================ */
-export {
-  sequelize,
-  Restaurant,
-  Favorite,
-  Review,
-  User,
-};
+export { sequelize, Restaurant, Favorite, Review, User, ReviewLike };

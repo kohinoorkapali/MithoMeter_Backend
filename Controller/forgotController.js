@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import { User } from "../Model/userModel.js";
+import { User } from "../Model/associations.js";
 import { PasswordResetToken } from "../Model/passwordResetTokenModel.js";
 
 export const requestPasswordReset = async (req, res) => {
