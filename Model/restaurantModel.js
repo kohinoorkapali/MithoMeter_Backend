@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js"; 
+import { Favorite } from "./FavoriteModel.js";
 
 export const Restaurant = sequelize.define("Restaurant",{
     restaurantId:{
@@ -62,4 +63,3 @@ export const Restaurant = sequelize.define("Restaurant",{
         defaultValue: []
 }
 });
-

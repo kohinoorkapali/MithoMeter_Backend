@@ -1,5 +1,4 @@
-// Controller/restaurantController.js
-import { Restaurant } from "../Model/restaurantModel.js";
+import { Favorite, Restaurant } from "../Model/associations.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
 import fs from "fs";
 import path from "path";
@@ -155,27 +154,31 @@ export const updateRestaurantById = async (req, res) => {
 /* ============================================================
  DELETE
 ============================================================ */
-
 export const deleteById = async (req, res) => {
   try {
     const { id } = req.params;
+
     const restaurant = await Restaurant.findByPk(id);
-    if (!restaurant) return res.status(404).json({ message: "Not found" });
+    if (!restaurant)
+      return res.status(404).json({ message: "Not found" });
+
+    // Delete favorites first
+    await Favorite.destroy({
+      where: { restaurantId: id },
+    });
 
     // Delete images
     (restaurant.photos || []).forEach((filename) => {
       const filePath = path.join("uploads", filename);
-      try {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error("Failed to delete image:", filePath, err);
-      }
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     });
 
+    // Now delete restaurant
     await restaurant.destroy();
+
     res.json({ message: "Restaurant deleted successfully" });
   } catch (err) {
-    console.error("DELETE RESTAURANT ERROR:", err);
+    console.error("DELETE ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };
