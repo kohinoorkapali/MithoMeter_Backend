@@ -105,6 +105,26 @@ export const getRestaurantById = async (req, res) => {
 /* ============================================================
  UPDATE
 ============================================================ */
+const normalizePath = (p) => {
+  if (!p) return "";
+
+  let path = p.replace(/\\/g, "/");
+
+  // Keep only from first /uploads
+  const index = path.indexOf("/uploads/");
+  if (index !== -1) {
+    path = path.substring(index);
+  }
+
+  // Remove repeated /uploads
+  path = path.replace(/(\/uploads\/)+/g, "/uploads/");
+
+  // Remove double slashes
+  path = path.replace(/\/{2,}/g, "/");
+
+  return path;
+};
+
 export const updateRestaurantById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -113,19 +133,14 @@ export const updateRestaurantById = async (req, res) => {
 
     // Existing photos
     let existingPhotos = [];
+
     if (req.body.existingPhotos) {
-      existingPhotos = parseJSONField(req.body.existingPhotos).map((p) =>
-        p.replace(/\\/g, "/").replace(/^.*uploads\//, "")
-      );      
+      existingPhotos = parseJSONField(req.body.existingPhotos).map(normalizePath);
     }
 
     // New uploads
-    const newPhotos = req.files?.map((file) =>
-      file.path
-        .replace(/\\/g, "/")
-        .replace(/^.*uploads\//, "")
-
-    ) || [];
+    const newPhotos =
+  req.files?.map((file) => file.filename) || [];
 
     restaurant.photos = [...existingPhotos, ...newPhotos];
 
