@@ -38,7 +38,10 @@ export const Review = sequelize.define("Review", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-
+  wasReported: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
   reportedAt: {
     type: DataTypes.DATE,
     allowNull: true,

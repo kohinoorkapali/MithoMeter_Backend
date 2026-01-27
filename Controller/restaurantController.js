@@ -1,8 +1,8 @@
 // Controller/restaurantController.js
 import { Restaurant } from "../Model/restaurantModel.js";
+import { isRestaurantOpen } from "../utils/timeUtils.js";
 import fs from "fs";
 import path from "path";
-import { isRestaurantOpen } from "../utils/timeUtils.js";
 
 // Helper: safely parse JSON fields
 const parseJSONField = (field) => {
@@ -104,7 +104,7 @@ export const getRestaurantById = async (req, res) => {
 };
 
 /* ============================================================
-   UPDATE RESTAURANT
+ UPDATE
 ============================================================ */
 export const updateRestaurantById = async (req, res) => {
   try {
@@ -116,13 +116,16 @@ export const updateRestaurantById = async (req, res) => {
     let existingPhotos = [];
     if (req.body.existingPhotos) {
       existingPhotos = parseJSONField(req.body.existingPhotos).map((p) =>
-        p.replace(/\\/g, "/").replace(/^.*\/uploads\//, "uploads/")
-      );
+        p.replace(/\\/g, "/").replace(/^.*uploads\//, "")
+      );      
     }
 
     // New uploads
     const newPhotos = req.files?.map((file) =>
-      file.path.replace(/\\/g, "/").replace(/^.*\/uploads\//, "uploads/")
+      file.path
+        .replace(/\\/g, "/")
+        .replace(/^.*uploads\//, "")
+
     ) || [];
 
     restaurant.photos = [...existingPhotos, ...newPhotos];
@@ -150,8 +153,9 @@ export const updateRestaurantById = async (req, res) => {
 };
 
 /* ============================================================
-   DELETE RESTAURANT
+ DELETE
 ============================================================ */
+
 export const deleteById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -160,7 +164,7 @@ export const deleteById = async (req, res) => {
 
     // Delete images
     (restaurant.photos || []).forEach((filename) => {
-      const filePath = path.join("uploads", "restaurants", filename);
+      const filePath = path.join("uploads", filename);
       try {
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       } catch (err) {

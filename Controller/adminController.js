@@ -4,6 +4,9 @@ import { Review } from "../Model/reviewModel.js";
 import { Notification } from "../Model/notificationModel.js";
 import { Op } from "sequelize";
 
+/* ============================================================
+ DASHBOARD
+============================================================ */
 export const getAnalytics = async (req, res) => {
   try {
     const totalUsers = await User.count({
@@ -37,26 +40,36 @@ export const getAnalytics = async (req, res) => {
   }
 };
 
+/* ============================================================
+ REPORTS
+============================================================ */
 export const getReportedReviews = async (req, res) => {
-  const reviews = await Review.findAll({
-    where: {
-      [Op.or]: [
-        { isReported: true }, // pending
-        { isHidden: true },   // hidden
-        { isReported: false, isHidden: false }, // approved
-      ],
-    },
-    include: [
-      {
-        model: User,
-        as: "user", 
-        attributes: ["username", "profile_image"], // only these fields
+  try {
+    const reviews = await Review.findAll({
+      where: {
+        [Op.or]: [
+          { isReported: true },   // Pending
+          { isHidden: true },     // Hidden
+          { wasReported: true },  // Approved after report
+        ],
       },
-    ],
-    order: [["reportedAt", "DESC"]],
-  });
 
-  res.json(reviews);
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["username", "profile_image"],
+        },
+      ],
+
+      order: [["reportedAt", "DESC"]],
+    });
+
+    res.json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const approveReportedReview = async (req, res) => {
@@ -66,11 +79,11 @@ export const approveReportedReview = async (req, res) => {
     {
       isReported: false,
       isHidden: false,
+      // wasReported stays true
     },
-    {
-      where: { reviewId: id },
-    }
+    { where: { reviewId: id } }
   );
+  
 
   if (!updated) {
     return res.status(404).json({ message: "Review not found" });
@@ -109,4 +122,57 @@ export const deleteReportedReview = async (req, res) => {
   });
 
   res.json({ message: "Review hidden and user notified" });
+};
+
+
+/* ============================================================
+ USER
+============================================================ */
+export const getAll = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: {role: "user"},
+      attributes: [
+        "id",
+        "username",
+        "email",
+        "profile_image",
+        "createdAt",
+        "status"
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({ data: users });
+  } catch (err) {
+    console.error("GET USERS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const toggleUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findOne({
+      where: {id, role: "user"},
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newStatus = user.status === "banned" ? "active" : "banned";
+    await user.update({status :newStatus});
+
+    res.status(200).json({
+      status: newStatus,
+      message: `User ${
+        newStatus === "banned" ? "banned" : "unbanned"
+      } successfully`,
+    });
+    
+  } catch (err) {
+    console.error("TOGGLE USER STATUS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
 };
