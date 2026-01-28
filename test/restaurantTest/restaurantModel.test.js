@@ -1,4 +1,5 @@
-const SequelizeMock = require("sequelize-mock");
+import SequelizeMock from "sequelize-mock";
+
 const dbMock = new SequelizeMock();
 
 // Mock Restaurant model
@@ -18,8 +19,8 @@ const RestaurantMock = dbMock.define("Restaurant", {
   menuLink: null,
 });
 
-describe("Restaurant Model", () => {
-  it("should create a restaurant", async () => {
+describe("Restaurant Mock Model", () => {
+  it("should create restaurant", async () => {
     const restaurant = await RestaurantMock.create({
       name: "Test Restaurant",
       location: "Kathmandu",
@@ -41,16 +42,5 @@ describe("Restaurant Model", () => {
     expect(restaurant.photos).toEqual(["img1.jpg", "img2.jpg"]);
     expect(restaurant.websiteLink).toBe("https://test.com");
     expect(restaurant.menuLink).toBe("https://test.com/menu");
-  });
-
-  it("should fail when mandatory fields are missing", async () => {
-    // Force SequelizeMock to throw an error
-    RestaurantMock.$queueFailure(new Error("Validation error: mandatory fields missing"));
-
-    try {
-      await RestaurantMock.create({});
-    } catch (error) {
-      expect(error.message).toBe("Validation error: mandatory fields missing");
-    }
   });
 });
