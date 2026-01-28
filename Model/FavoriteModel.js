@@ -1,4 +1,3 @@
-// backend/Model/FavoriteModel.js
 import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js";
 // Define the Favorite model

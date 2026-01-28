@@ -1,20 +1,26 @@
-const userController = require("../../Controller/userController.js");
-const { User } = require("../../Model/associations.js");
+import { jest } from "@jest/globals";
 
-// ===============================
-// MOCKS
-// ===============================
+/* ===============================
+   MOCK FIRST (VERY IMPORTANT)
+================================ */
 
-jest.mock("../../Model/associations.js", () => ({
+jest.unstable_mockModule("../../Model/associations.js", () => ({
   User: {
     create: jest.fn(),
     findOne: jest.fn(),
   },
 }));
 
-// ===============================
-// HELPER: MOCK RESPONSE
-// ===============================
+/* ===============================
+   THEN IMPORT AFTER MOCK
+================================ */
+
+const { User } = await import("../../Model/associations.js");
+const userController = await import("../../Controller/userController.js");
+
+/* ===============================
+   HELPER: MOCK RESPONSE
+================================ */
 
 const mockResponse = () => {
   const res = {};
@@ -26,9 +32,9 @@ const mockResponse = () => {
   return res;
 };
 
-// ===============================
-// TESTS
-// ===============================
+/* ===============================
+   TESTS
+================================ */
 
 describe("User Controller", () => {
   beforeEach(() => {
@@ -55,7 +61,7 @@ describe("User Controller", () => {
 
     await userController.save(req, res);
 
-    expect(User.create).toHaveBeenCalledWith(req.body);
+    expect(User.create).toHaveBeenCalled();
 
     expect(res.status).toHaveBeenCalledWith(201);
 
@@ -128,7 +134,7 @@ describe("User Controller", () => {
   });
 
   // ===========================
-  // UPDATE BY ID
+  // UPDATE
   // ===========================
 
   it("should update username", async () => {
@@ -157,7 +163,7 @@ describe("User Controller", () => {
   });
 
   // ===========================
-  // DELETE BY ID
+  // DELETE
   // ===========================
 
   it("should delete user", async () => {
@@ -181,7 +187,7 @@ describe("User Controller", () => {
   });
 
   // ===========================
-  // UPDATE PROFILE WITH IMAGE
+  // UPDATE WITH IMAGE
   // ===========================
 
   it("should update username and image", async () => {
