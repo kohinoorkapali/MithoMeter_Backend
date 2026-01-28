@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js";
-import { User } from "./associations.js"; // make sure User is imported
+import { User } from "./associations.js";
+import { Review } from "./reviewModel.js"; // ✅ import Review
 
 export const Notification = sequelize.define("Notification", {
   id: {
@@ -8,6 +9,7 @@ export const Notification = sequelize.define("Notification", {
     autoIncrement: true,
     primaryKey: true,
   },
+
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -15,16 +17,30 @@ export const Notification = sequelize.define("Notification", {
       model: User,
       key: "id",
     },
-    onDelete: "CASCADE", // if user deleted, notifications deleted
+    onDelete: "CASCADE",
   },
+
+  // ✅ ADD THIS
+  reviewId: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // important (old notifications may not have it)
+    references: {
+      model: Review,
+      key: "reviewId",
+    },
+    onDelete: "CASCADE",
+  },
+
   message: {
     type: DataTypes.STRING,
     allowNull: false,
   },
+
   isRead: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+
 }, {
   timestamps: true,
 });

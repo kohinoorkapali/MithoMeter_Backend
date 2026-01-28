@@ -91,36 +91,50 @@ export const approveReportedReview = async (req, res) => {
 };
 
 export const deleteReportedReview = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const review = await Review.findOne({ where: { reviewId: id } });
+    const review = await Review.findOne({
+      where: { reviewId: id }, // or { id }
+    });
 
-  if (!review) {
-    return res.status(404).json({ message: "Review not found" });
-  }
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
 
-  // Soft delete (hide)
-  await Review.update(
-    { isHidden: true,
+    await review.update({
+      isHidden: true,
       isReported: false,
-     },
-    { where: { reviewId: id } }
-  );
+    });
 
-  // Create notification (ONLY ONCE)
-  await Notification.findOrCreate({
-    where: {
-      userId: review.userId,
-      reviewId: review.reviewId,
-      message: "One of your reviews was removed by the admin for violating guidelines.",
-    },
-    defaults: {
-      isRead: false,
-    },
-  });
+    if (review.userId) {
+      await Notification.findOrCreate({
+        where: {
+          userId: review.userId,
+          reviewId: review.reviewId,
+          message:
+            "One of your reviews was removed by the admin for violating guidelines.",
+        },
+        defaults: {
+          isRead: false,
+        },
+      });
+    }
 
-  res.json({ message: "Review hidden and user notified" });
+    res.json({
+      message: "Review hidden and user notified",
+    });
+
+  } catch (err) {
+    console.error("DELETE REVIEW ERROR:", err);
+
+    res.status(500).json({
+      message: "Failed to hide review",
+      error: err.message,
+    });
+  }
 };
+
 
 
 /* ============================================================

@@ -81,6 +81,19 @@ Notification.belongsTo(User, {
    });
 
 /* ============================
+   NOTIFICATION ↔ REVIEW
+============================ */
+Review.hasMany(Notification, {
+  foreignKey: "reviewId",
+  onDelete: "CASCADE",
+});
+
+Notification.belongsTo(Review, {
+  foreignKey: "reviewId",
+  onDelete: "CASCADE",
+});
+
+/* ============================
    EXPORT
 ============================ */
 export { sequelize, Restaurant, Favorite, Review, User, ReviewLike, Notification };
