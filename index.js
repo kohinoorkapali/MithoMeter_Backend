@@ -5,6 +5,9 @@ import { fileURLToPath } from "url";
 import { sequelize } from "./Database/db.js";
 
 import { connection } from "./Database/db.js";
+
+import "./Model/associations.js";
+
 import { userRouter } from "./Routes/userRoutes.js";
 import authRouter from "./Routes/authRoutes.js"; 
 import restaurantRouter from "./Routes/restaurantRoutes.js";
@@ -21,11 +24,8 @@ import "./Model/userModel.js";
 import "./Model/reviewModel.js"; 
 import "./Model/FavoriteModel.js";
 import "./Model/reviewLikeModel.js";
-import "./Model/associations.js";
-
 
 import deleteRoutes from "./Routes/deleteRoutes.js";
-
 
 const app = express();
 
@@ -45,7 +45,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/uploads", express.static(path.resolve("./uploads")));
 
+
 // DB connection
+if (process.env.NODE_ENV !== "test") {
 connection()
   .then(async () => {
     console.log("Database connected");
@@ -55,7 +57,7 @@ connection()
     await sequelize.sync({ alter: true });
   })
   .catch((err) => console.error("DB connection failed:", err));
-
+}
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
@@ -72,5 +74,11 @@ app.use("/api/forgot", forgotRouter);
 app.get("/", (req, res) => res.send("User API is running"));
 
 // Start server
-app.listen(5000, () => console.log("Server running on port 5000"));
+if (process.env.NODE_ENV !== "test") {
+  app.listen(5000, () => {
+    console.log("Server running on port 5000");
+  });
+}
+
+export default app;
 

@@ -154,30 +154,35 @@ describe("Admin Controller", () => {
     const req = {
       params: { id: 1 },
     };
-
+  
     const res = mockResponse();
-
-    Review.findOne.mockResolvedValue({
+  
+    const mockReview = {
       reviewId: 1,
       userId: 5,
-    });
-
-    Review.update.mockResolvedValue([1]);
-
+      update: jest.fn(),   // instance update
+    };
+  
+    Review.findOne.mockResolvedValue(mockReview);
+  
     Notification.findOrCreate.mockResolvedValue([{}, true]);
-
+  
     await adminController.deleteReportedReview(req, res);
-
+  
     expect(Review.findOne).toHaveBeenCalled();
-
-    expect(Review.update).toHaveBeenCalled();
-
+  
+    expect(mockReview.update).toHaveBeenCalledWith({
+      isHidden : true,
+      isReported: false,
+    });
+  
     expect(Notification.findOrCreate).toHaveBeenCalled();
-
+  
     expect(res.json).toHaveBeenCalledWith({
       message: "Review hidden and user notified",
     });
   });
+  
 
   it("should return 404 if review not found (delete)", async () => {
     const req = {

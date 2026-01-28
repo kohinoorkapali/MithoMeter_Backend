@@ -13,8 +13,15 @@ export const sequelize = new Sequelize(
 
 export const connection = async () => {
   try {
-    await sequelize.authenticate(); 
-    await sequelize.sync({alter:true});         
+    // ❗ DO NOT connect during tests
+    if (process.env.NODE_ENV === "test") {
+      console.log("DB connection skipped in test mode");
+      return;
+    }
+
+    await sequelize.authenticate();
+    await sequelize.sync({ alter: true });
+
     console.log("Database connected successfully");
   } catch (e) {
     console.error("Database connection failed:", e.message);
