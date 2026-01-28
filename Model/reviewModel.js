@@ -1,10 +1,6 @@
-// src/models/reviewModel.js
 import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js";
-import { Restaurant } from "./restaurantModel.js";
-import { User } from "./userModel.js";
-import { ReviewLike } from "./reviewLikeModel.js";
-
+import { Restaurant } from "../Model/associations.js";
 export const Review = sequelize.define("Review", {
   reviewId: {
     type: DataTypes.INTEGER,
@@ -51,9 +47,3 @@ export const Review = sequelize.define("Review", {
     defaultValue: false,
   }  
 });
-
-Restaurant.hasMany(Review, { foreignKey: "restaurantId" });
-Review.belongsTo(Restaurant, { foreignKey: "restaurantId" });
-Review.belongsTo(User, { foreignKey: "userId", as: "user" });
-User.hasMany(Review, { foreignKey: "userId", as: "reviews" });
-

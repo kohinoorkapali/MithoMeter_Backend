@@ -1,6 +1,4 @@
-import { Review } from "../Model/reviewModel.js";
-import { Restaurant } from "../Model/restaurantModel.js";
-import { User } from "../Model/userModel.js";
+import { Review,User, Restaurant } from "../Model/associations.js";
 import { ReviewLike } from "../Model/reviewLikeModel.js"; // make sure you have this model
 
 // GET all reviews for a restaurant
@@ -166,14 +164,18 @@ export const reportReview = async (req, res) => {
     const [rowsUpdated] = await Review.update(
       {
         isReported: true,
-        isHidden: false,
+        wasReported: true,
+        reportedAt: new Date(),
+        isHidden: false, // keep visible for admin
       },
       { where: { reviewId: id } }
     );
 
-    if (rowsUpdated === 0) return res.status(404).json({ message: "Review not found" });
+    if (rowsUpdated === 0) {
+      return res.status(404).json({ message: "Review not found" });
+    }
 
-    res.json({ message: "Review reported successfully" });
+    res.json({ message: "Review reported successfully ✅" });
   } catch (error) {
     console.error("Report review error:", error);
     res.status(500).json({ message: error.message });

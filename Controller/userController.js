@@ -1,4 +1,4 @@
-import { User } from "../Model/userModel.js";
+import { User } from "../Model/associations.js";
 
 export const save = async (req, res) => {
   try {
@@ -92,7 +92,7 @@ export const deleteById = async (req, res) => {
 export const updateProfileWithImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username } = req.body;
+    const { username } = req.body || {};
     const profileImage = req.file?.filename;
 
     const user = await User.findOne({ where: { id } });

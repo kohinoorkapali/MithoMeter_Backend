@@ -1,7 +1,5 @@
-// Controller/restaurantController.js
-import { Restaurant } from "../Model/restaurantModel.js";
+import { Favorite, Restaurant } from "../Model/associations.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
-import { Favorite } from "../Model/FavoriteModel.js";
 import fs from "fs";
 import path from "path";
 
@@ -107,6 +105,26 @@ export const getRestaurantById = async (req, res) => {
 /* ============================================================
  UPDATE
 ============================================================ */
+const normalizePath = (p) => {
+  if (!p) return "";
+
+  let path = p.replace(/\\/g, "/");
+
+  // Keep only from first /uploads
+  const index = path.indexOf("/uploads/");
+  if (index !== -1) {
+    path = path.substring(index);
+  }
+
+  // Remove repeated /uploads
+  path = path.replace(/(\/uploads\/)+/g, "/uploads/");
+
+  // Remove double slashes
+  path = path.replace(/\/{2,}/g, "/");
+
+  return path;
+};
+
 export const updateRestaurantById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -115,19 +133,14 @@ export const updateRestaurantById = async (req, res) => {
 
     // Existing photos
     let existingPhotos = [];
+
     if (req.body.existingPhotos) {
-      existingPhotos = parseJSONField(req.body.existingPhotos).map((p) =>
-        p.replace(/\\/g, "/").replace(/^.*uploads\//, "")
-      );      
+      existingPhotos = parseJSONField(req.body.existingPhotos).map(normalizePath);
     }
 
     // New uploads
-    const newPhotos = req.files?.map((file) =>
-      file.path
-        .replace(/\\/g, "/")
-        .replace(/^.*uploads\//, "")
-
-    ) || [];
+    const newPhotos =
+  req.files?.map((file) => file.filename) || [];
 
     restaurant.photos = [...existingPhotos, ...newPhotos];
 
@@ -156,35 +169,33 @@ export const updateRestaurantById = async (req, res) => {
 /* ============================================================
  DELETE
 ============================================================ */
-
 export const deleteById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const restaurant = await Restaurant.findByPk(id);
-    if (!restaurant) return res.status(404).json({ message: "Not found" });
 
-    // 1. Delete favorites related to this restaurant
+    const restaurant = await Restaurant.findByPk(id);
+    if (!restaurant)
+      return res.status(404).json({ message: "Not found" });
+
+    // Delete favorites first
     await Favorite.destroy({
       where: { restaurantId: id },
     });
 
-    // 2. Delete images
+
+    // Delete images
     (restaurant.photos || []).forEach((filename) => {
       const filePath = path.join("uploads", filename);
-      try {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error("Failed to delete image:", filePath, err);
-      }
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     });
 
-    // 3. Delete restaurant
+    // Now delete restaurant
     await restaurant.destroy();
 
     res.json({ message: "Restaurant deleted successfully" });
   } catch (err) {
-    console.error("DELETE RESTAURANT ERROR:", err);
+    console.error("DELETE ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };

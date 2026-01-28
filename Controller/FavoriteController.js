@@ -1,4 +1,4 @@
-import { Favorite } from "../Model/FavoriteModel.js";
+import { Favorite, Restaurant } from "../Model/associations.js";
 
 export const FavoriteController = {
 
@@ -25,15 +25,47 @@ export const FavoriteController = {
 
   async getFavorites(req, res) {
     const { userId } = req.params;
-
+  
     try {
       const favorites = await Favorite.findAll({
         where: { userId },
-        include: ["Restaurant"],
+        include: [
+          {
+            model: Restaurant,
+          },
+        ],
       });
-      res.status(200).json(favorites);
+  
+      const normalized = favorites.map((fav) => {
+        const data = fav.toJSON();
+  
+        if (data.Restaurant) {
+          let photos = data.Restaurant.photos;
+  
+          // Parse if string
+          if (typeof photos === "string") {
+            try {
+              photos = JSON.parse(photos);
+            } catch {
+              photos = [];
+            }
+          }
+  
+          if (!Array.isArray(photos)) photos = [];
+  
+          // Same path as getAllRestaurants
+          data.Restaurant.photos = photos.map(
+            (filename) => `/uploads/restaurants/${filename}`
+          );
+        }
+  
+        return data;
+      });
+  
+      res.status(200).json(normalized);
     } catch (error) {
-      res.status(500).json({ message: "Error fetching", error });
+      console.error("GET FAVORITES ERROR:", error);
+      res.status(500).json({ message: "Error fetching favorites" });
     }
   },
 

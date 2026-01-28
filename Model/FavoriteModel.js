@@ -1,9 +1,5 @@
-// backend/Model/FavoriteModel.js
 import { DataTypes } from "sequelize";
 import { sequelize } from "../Database/db.js";
-import { User } from "./userModel.js";
-import { Restaurant } from "./restaurantModel.js";
-
 // Define the Favorite model
 export const Favorite = sequelize.define(
   "Favorite",
@@ -31,12 +27,3 @@ export const Favorite = sequelize.define(
     ],
   }
 );
-
-// ✅ Associations
-// Favorite ↔ Restaurant
-Favorite.belongsTo(Restaurant, { foreignKey: "restaurantId" });
-Restaurant.hasMany(Favorite, { foreignKey: "restaurantId" });
-
-// Favorite ↔ User
-Favorite.belongsTo(User, { foreignKey: "userId" });
-User.hasMany(Favorite, { foreignKey: "userId" });
