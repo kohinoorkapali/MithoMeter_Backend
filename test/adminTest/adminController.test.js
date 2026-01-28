@@ -1,9 +1,5 @@
 import { jest } from "@jest/globals";
 
-/* ===============================
-   MOCKS (BEFORE IMPORTS)
-================================ */
-
 jest.unstable_mockModule("../../Model/associations.js", () => ({
   Review: {
     count: jest.fn(),
@@ -35,10 +31,6 @@ jest.unstable_mockModule("sequelize", () => ({
     or: Symbol("or"),
   },
 }));
-
-/* ===============================
-   IMPORTS (AFTER MOCKS)
-================================ */
 
 const { Review, User, Restaurant } = await import(
   "../../Model/associations.js"
