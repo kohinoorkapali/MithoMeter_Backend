@@ -1,5 +1,5 @@
 import { Notification } from "../Model/notificationModel.js";
-import { User } from "../Model/userModel.js";
+import { User } from "../Model/associations.js";
 
 export const getUserNotifications = async (req, res) => {
   try {

@@ -4,6 +4,7 @@ import { Favorite } from "./FavoriteModel.js";
 import { Review } from "./reviewModel.js";
 import { User } from "./userModel.js";
 import { ReviewLike } from "./reviewLikeModel.js";
+import { Notification } from "./notificationModel.js";
 
 /* ============================
    FAVORITE ↔ RESTAURANT
@@ -68,6 +69,18 @@ ReviewLike.belongsTo(Review, {
 });
 
 /* ============================
+   NOTIFICATION ↔ USER
+============================ */
+User.hasMany(Notification, {
+   foreignKey: "userId",
+   onDelete: "CASCADE" 
+  });
+Notification.belongsTo(User, {
+   foreignKey: "userId",
+    onDelete: "CASCADE"
+   });
+
+/* ============================
    EXPORT
 ============================ */
-export { sequelize, Restaurant, Favorite, Review, User, ReviewLike };
+export { sequelize, Restaurant, Favorite, Review, User, ReviewLike, Notification };

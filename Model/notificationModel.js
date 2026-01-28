@@ -1,64 +1,30 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../Database/db.js"; 
-import { Review } from "./reviewModel.js";
-import { User } from "./userModel.js";
+import { sequelize } from "../Database/db.js";
+import { User } from "./associations.js"; // make sure User is imported
 
 export const Notification = sequelize.define("Notification", {
-  notificationId: {
+  id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
     autoIncrement: true,
-    field: "notification_id",
+    primaryKey: true,
   },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    field: "user_id",
     references: {
-      model: "Users",
+      model: User,
       key: "id",
     },
-    onDelete: "CASCADE",
+    onDelete: "CASCADE", // if user deleted, notifications deleted
   },
   message: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   isRead: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
-    field: "is_read",
   },
-  reviewId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    field: "review_id",
-    references: {
-      model: "Reviews",
-      key: "reviewId",
-    },
-    onDelete: "SET NULL",
-  },  
-  
 }, {
-  tableName: "Notifications",
   timestamps: true,
-  createdAt: "created_at",
-  updatedAt: false,
-});
-
-Notification.belongsTo(Review, {
-  foreignKey: "reviewId",
-  as: "review",
-});
-
-
-User.hasMany(Notification, {
-  foreignKey: "userId",
-  as: "notifications",
-});
-
-Notification.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
 });

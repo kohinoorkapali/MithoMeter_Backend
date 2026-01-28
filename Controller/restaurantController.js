@@ -1,6 +1,5 @@
 import { Favorite, Restaurant } from "../Model/associations.js";
 import { isRestaurantOpen } from "../utils/timeUtils.js";
-import { Favorite } from "../Model/FavoriteModel.js";
 import fs from "fs";
 import path from "path";
 
