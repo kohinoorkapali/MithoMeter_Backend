@@ -10,7 +10,6 @@ import { Notification } from "./notificationModel.js";
    ALL ASSOCIATIONS
 ============================ */
 
-if (process.env.NODE_ENV !== "test") {
 
   // FAVORITE ↔ RESTAURANT
   Restaurant.hasMany(Favorite, {
@@ -95,7 +94,7 @@ if (process.env.NODE_ENV !== "test") {
     foreignKey: "reviewId",
     onDelete: "CASCADE",
   });
-}
+
 
 export {
   sequelize,
