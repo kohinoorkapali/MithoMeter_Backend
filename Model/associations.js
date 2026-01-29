@@ -7,93 +7,102 @@ import { ReviewLike } from "./reviewLikeModel.js";
 import { Notification } from "./notificationModel.js";
 
 /* ============================
-   FAVORITE ↔ RESTAURANT
+   ALL ASSOCIATIONS
 ============================ */
-Restaurant.hasMany(Favorite, {
-  foreignKey: "restaurantId",
-  onDelete: "CASCADE",
-});
-Favorite.belongsTo(Restaurant, {
-  foreignKey: "restaurantId",
-  onDelete: "CASCADE",
-});
 
-/* ============================
-   FAVORITE ↔ USER
-============================ */
-User.hasMany(Favorite, {
-  foreignKey: "userId",
-  onDelete: "CASCADE",
-});
-Favorite.belongsTo(User, {
-  foreignKey: "userId",
-  onDelete: "CASCADE",
-});
+if (process.env.NODE_ENV !== "test") {
 
-/* ============================
-   REVIEW ↔ RESTAURANT
-============================ */
-Restaurant.hasMany(Review, {
-  foreignKey: "restaurantId",
-  onDelete: "CASCADE",
-});
-Review.belongsTo(Restaurant, {
-  foreignKey: "restaurantId",
-  onDelete: "CASCADE",
-});
-
-/* ============================
-   REVIEW ↔ USER
-============================ */
-User.hasMany(Review, {
-  foreignKey: "userId",
-  as: "reviews",
-  onDelete: "CASCADE",
-});
-Review.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user",
-  onDelete: "CASCADE",
-});
-
-/* ============================
-   REVIEW ↔ REVIEWLIKE
-============================ */
-Review.hasMany(ReviewLike, {
-  foreignKey: "reviewId",
-  onDelete: "CASCADE",
-});
-ReviewLike.belongsTo(Review, {
-  foreignKey: "reviewId",
-  onDelete: "CASCADE",
-});
-
-/* ============================
-   NOTIFICATION ↔ USER
-============================ */
-User.hasMany(Notification, {
-   foreignKey: "userId",
-   onDelete: "CASCADE" 
+  // FAVORITE ↔ RESTAURANT
+  Restaurant.hasMany(Favorite, {
+    foreignKey: "restaurantId",
+    onDelete: "CASCADE",
   });
-Notification.belongsTo(User, {
-   foreignKey: "userId",
-    onDelete: "CASCADE"
-   });
 
-/* ============================
-   NOTIFICATION ↔ REVIEW
-============================ */
-Review.hasMany(Notification, {
-  foreignKey: "reviewId",
-  onDelete: "CASCADE",
-});
+  Favorite.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
+  });
 
-Notification.belongsTo(Review, {
-  foreignKey: "reviewId",
-  onDelete: "CASCADE",
-});
 
-/* ============================
-   EXPORT
-============================ */
-export { sequelize, Restaurant, Favorite, Review, User, ReviewLike, Notification };
+  // FAVORITE ↔ USER
+  User.hasMany(Favorite, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+  });
+
+  Favorite.belongsTo(User, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+  });
+
+
+  // REVIEW ↔ RESTAURANT
+  Restaurant.hasMany(Review, {
+    foreignKey: "restaurantId",
+    onDelete: "CASCADE",
+  });
+
+  Review.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
+    onDelete: "CASCADE",
+  });
+
+
+  // REVIEW ↔ USER
+  User.hasMany(Review, {
+    foreignKey: "userId",
+    as: "reviews",
+    onDelete: "CASCADE",
+  });
+
+  Review.belongsTo(User, {
+    foreignKey: "userId",
+    as: "user",
+    onDelete: "CASCADE",
+  });
+
+
+  // REVIEW ↔ REVIEWLIKE
+  Review.hasMany(ReviewLike, {
+    foreignKey: "reviewId",
+    onDelete: "CASCADE",
+  });
+
+  ReviewLike.belongsTo(Review, {
+    foreignKey: "reviewId",
+    onDelete: "CASCADE",
+  });
+
+
+  // NOTIFICATION ↔ USER
+  User.hasMany(Notification, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+  });
+
+  Notification.belongsTo(User, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+  });
+
+
+  // NOTIFICATION ↔ REVIEW
+  Review.hasMany(Notification, {
+    foreignKey: "reviewId",
+    onDelete: "CASCADE",
+  });
+
+  Notification.belongsTo(Review, {
+    foreignKey: "reviewId",
+    onDelete: "CASCADE",
+  });
+}
+
+export {
+  sequelize,
+  Restaurant,
+  Favorite,
+  Review,
+  User,
+  ReviewLike,
+  Notification,
+};
