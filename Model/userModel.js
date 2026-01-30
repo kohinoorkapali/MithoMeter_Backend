@@ -25,4 +25,18 @@ export const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  role: {
+    type: DataTypes.STRING,
+    defaultValue: "user", 
+  },
+   profile_image: {
+    type: DataTypes.STRING,
+    allowNull: true, // optional
+  },
+  status: {
+    type: DataTypes.ENUM("active", "banned"),
+    allowNull: false,
+    defaultValue: "active",
+  },
+
 });

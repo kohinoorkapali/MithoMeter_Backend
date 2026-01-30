@@ -1,18 +1,22 @@
 import express from "express";
 import {
-  getAll,
   save,
   getById,
   updateById,
   deleteById,
+  updateProfileWithImage,
 } from "../Controller/userController.js";
 
-export const userRouter = express.Router(); 
+import { profileUploader } from "../middleware/uploads.js";
 
-userRouter.get("/", getAll);
+export const userRouter = express.Router();
+
 userRouter.post("/", save);
 userRouter.get("/:id", getById);
-userRouter.patch("/:id", updateById);
+userRouter.patch("/:id", updateById);               // username only
 userRouter.delete("/:id", deleteById);
 
-export default userRouter;
+// Single route that accepts both POST and PATCH for profile image + username
+userRouter.route("/upload/:id")
+  .post(profileUploader.single("profile"), updateProfileWithImage)
+  .patch(profileUploader.single("profile"), updateProfileWithImage);

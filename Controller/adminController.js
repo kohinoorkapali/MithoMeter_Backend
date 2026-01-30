@@ -1,0 +1,190 @@
+import { Review, User, Restaurant } from "../Model/associations.js";
+import { Notification } from "../Model/notificationModel.js";
+import { Op } from "sequelize";
+
+/* ============================================================
+ DASHBOARD
+============================================================ */
+export const getAnalytics = async (req, res) => {
+  try {
+    const totalUsers = await User.count({
+      where: {role: "user"}
+    });
+
+    const totalRestaurants = await Restaurant.count();
+
+    const activeUsers = await User.count({
+      where: { status: "active",
+        role: "user"
+       } 
+    });
+
+    const helpfulChecks = (await Review.sum("likes")) || 0;
+
+    //return ONLY numbers
+    return res.status(200).json({
+      totalUsers,
+      totalRestaurants,
+      activeUsers,
+      helpfulChecks
+    });
+
+  } catch (error) {
+    console.error(error.message); 
+    return res.status(500).json({
+      message: "Failed to fetch analytics",
+      error: error.message 
+    });
+  }
+};
+
+/* ============================================================
+ REPORTS
+============================================================ */
+export const getReportedReviews = async (req, res) => {
+  try {
+    const reviews = await Review.findAll({
+      where: {
+        [Op.or]: [
+          { isReported: true },   // Pending
+          { isHidden: true },     // Hidden
+          { wasReported: true },  // Approved after report
+        ],
+      },
+
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["username", "profile_image"],
+        },
+      ],
+
+      order: [["reportedAt", "DESC"]],
+    });
+
+    res.json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const approveReportedReview = async (req, res) => {
+  const { id } = req.params;
+
+  const [updated] = await Review.update(
+    {
+      isReported: false,
+      isHidden: false,
+      // wasReported stays true
+    },
+    { where: { reviewId: id } }
+  );
+  
+
+  if (!updated) {
+    return res.status(404).json({ message: "Review not found" });
+  }
+
+  res.json({ message: "Review approved" });
+};
+
+export const deleteReportedReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const review = await Review.findOne({
+      where: { reviewId: id }, // or { id }
+    });
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    await review.update({
+      isHidden: true,
+      isReported: false,
+    });
+
+    if (review.userId) {
+      await Notification.findOrCreate({
+        where: {
+          userId: review.userId,
+          reviewId: review.reviewId,
+          message:
+            "One of your reviews was removed by the admin for violating guidelines.",
+        },
+        defaults: {
+          isRead: false,
+        },
+      });
+    }
+
+    res.json({
+      message: "Review hidden and user notified",
+    });
+
+  } catch (err) {
+    console.error("DELETE REVIEW ERROR:", err);
+
+    res.status(500).json({
+      message: "Failed to hide review",
+      error: err.message,
+    });
+  }
+};
+
+
+
+/* ============================================================
+ USER
+============================================================ */
+export const getAll = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: {role: "user"},
+      attributes: [
+        "id",
+        "username",
+        "email",
+        "profile_image",
+        "createdAt",
+        "status"
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({ data: users });
+  } catch (err) {
+    console.error("GET USERS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const toggleUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findOne({
+      where: {id, role: "user"},
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newStatus = user.status === "banned" ? "active" : "banned";
+    await user.update({status :newStatus});
+
+    res.status(200).json({
+      status: newStatus,
+      message: `User ${
+        newStatus === "banned" ? "banned" : "unbanned"
+      } successfully`,
+    });
+    
+  } catch (err) {
+    console.error("TOGGLE USER STATUS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
